@@ -34,6 +34,8 @@
     -webkit-font-smoothing: antialiased;
     min-height: 100dvh;
     overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   /* ── background ── */
@@ -51,10 +53,10 @@
   /* ── layout ── */
   .stage {
     position: relative; z-index: 1;
-    min-height: 100dvh;
+    flex: 1;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 22px;
-    padding: max(60px, env(safe-area-inset-top)) 16px max(52px, env(safe-area-inset-bottom));
+    padding: max(60px, env(safe-area-inset-top)) 16px 24px;
     pointer-events: none;
   }
   .stage > * { pointer-events: auto; }
@@ -187,10 +189,60 @@
   .snd .w { transition: opacity .2s; }
   .snd[aria-pressed="false"] .w { opacity: 0; }
   .snd[aria-pressed="true"] .x { opacity: 0; }
+  /* ── town ── */
+  .town {
+    position: relative; z-index: 1; flex: none;
+    height: calc(150px + env(safe-area-inset-bottom));
+    transition: opacity 1.4s ease;
+  }
+  .town canvas {
+    position: absolute; left: 0; top: 18px;
+    width: 100%; height: 132px;
+    image-rendering: pixelated; image-rendering: crisp-edges;
+    display: block; cursor: pointer;
+  }
+  .town::after {                       /* ground continues under the phone's home bar */
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0;
+    height: env(safe-area-inset-bottom); background: #0a0d0b;
+  }
   .hint {
-    bottom: max(14px, env(safe-area-inset-bottom)); left: 0; right: 0;
+    position: absolute; top: 0; left: 0; right: 0;
     text-align: center; font-size: 11px; color: var(--dim); pointer-events: none;
   }
+  .bubble {
+    position: absolute; z-index: 2;
+    transform: translate(-50%, -100%);
+    background: rgba(0,0,0,.88);
+    border: 1px solid rgba(159,224,168,.45);
+    color: var(--text); font-size: 11px; line-height: 1.4;
+    padding: 3px 8px; white-space: nowrap; pointer-events: none;
+  }
+  .bubble .d { color: var(--dim); }
+
+  /* ── character creator ── */
+  .creator {
+    flex: 1; min-width: 0;
+    display: flex; align-items: center; gap: 12px;
+    border: 1px solid var(--line); background: rgba(255,255,255,.025);
+    padding: 8px 10px;
+  }
+  #preview { width: 48px; height: 64px; flex: none; image-rendering: pixelated; image-rendering: crisp-edges; }
+  .picks { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .pick { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--muted); }
+  .pick .pl { flex: 1; text-align: center; white-space: nowrap; }
+  .arw, .dice {
+    background: rgba(0,0,0,.4); border: 1px solid var(--line); border-radius: 0;
+    color: var(--spore); cursor: pointer; padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .arw { width: 28px; height: 24px; font-size: 9px; flex: none; }
+  .dice { width: 28px; height: 28px; font-size: 17px; line-height: 1; align-self: flex-start; flex: none; }
+  .arw:hover, .dice:hover, .arw:focus-visible, .dice:focus-visible { border-color: rgba(159,224,168,.5); outline: none; }
+  .arw:active, .dice:active { transform: scale(.94); }
+  .skins { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; padding-top: 2px; }
+  .sk { width: 14px; height: 14px; border: 0; border-radius: 0; padding: 0; cursor: pointer; }
+  .sk[aria-pressed="true"] { box-shadow: 0 0 0 2px #000, 0 0 0 3px var(--spore); }
+  .sk:focus-visible { outline: 1px solid var(--spore); outline-offset: 3px; }
 
   @keyframes blink { 50% { opacity: 0 } }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
@@ -240,6 +292,26 @@
         <label class="flag" for="contact">--reply</label>
         <input type="text" id="contact" name="contact" maxlength="120" dir="auto" data-i18n-ph="contact_ph" autocomplete="off">
       </div>
+      <div class="field">
+        <span class="flag">--look</span>
+        <div class="creator">
+          <canvas id="preview" width="12" height="16" aria-hidden="true"></canvas>
+          <div class="picks">
+            <div class="pick">
+              <button type="button" class="arw" data-k="0" data-d="-1" aria-label="Previous head">◀</button>
+              <span class="pl" id="lblHead">head</span>
+              <button type="button" class="arw" data-k="0" data-d="1" aria-label="Next head">▶</button>
+            </div>
+            <div class="pick">
+              <button type="button" class="arw" data-k="1" data-d="-1" aria-label="Previous outfit">◀</button>
+              <span class="pl" id="lblFit">outfit</span>
+              <button type="button" class="arw" data-k="1" data-d="1" aria-label="Next outfit">▶</button>
+            </div>
+            <div class="skins" id="skins" role="group" aria-label="Skin"></div>
+          </div>
+          <button type="button" class="dice" id="dice" aria-label="Random look">⚄</button>
+        </div>
+      </div>
       <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off">
       <p class="err" id="err" dir="auto" hidden></p>
       <div class="actions">
@@ -255,7 +327,11 @@
   </section>
 </main>
 
-<p class="corner hint ghosted" id="hint" dir="auto">// <span data-i18n="tap"></span></p>
+<div class="town later" id="town">
+  <p class="hint" dir="auto">// <span data-i18n="tap"></span></p>
+  <canvas id="townCanvas" aria-label="Visitors' town"></canvas>
+  <div class="bubble" id="bubble" hidden></div>
+</div>
 
 <script>
   // ▼ Your Google Sheet web app (Apps Script) — messages, daily cap and on/off switch live there
@@ -268,7 +344,7 @@
 
   /* ───────── Translations ───────── */
   const I18N = {
-    en: { full: 'My inbox is full for today. Come back tomorrow.', closed: 'Not taking messages right now. Check back later.',
+    en: { badname: "That name isn't allowed. Try another.", full: 'My inbox is full for today. Come back tomorrow.', closed: 'Not taking messages right now. Check back later.',
       cooldown: 'You can send another in {t}.', daily: "That's plenty for today. Come back tomorrow.",
       _name: "English", leave: "leave me a message",
       hint: "only I can read what you write here", msg_ph: "type your message…",
@@ -276,7 +352,7 @@
       send: "send", sending: "transmitting…", sent: "✓ Message delivered. Thanks, I'll read it soon.", again: "write another",
       empty: "Write something first.", noname: "Tell me your name first.",
       error: "Couldn't send. Check your connection and try again.", tap: "tap the dark to seed life" },
-    "zh-Hans": { full: '今天的信箱满了，明天再来吧。', closed: '暂时不收留言，晚点再来看看。',
+    "zh-Hans": { badname: '这个名字不行，换一个吧。', full: '今天的信箱满了，明天再来吧。', closed: '暂时不收留言，晚点再来看看。',
       cooldown: '{t} 后可以再发一条。', daily: '今天已经够多啦，明天再来吧。',
       _name: "简体中文", leave: "给我留言吧",
       hint: "你写下的内容只有我能看到", msg_ph: "输入你的留言…",
@@ -284,7 +360,7 @@
       send: "发送", sending: "传输中…", sent: "✓ 留言已送达。谢谢，我会尽快看。", again: "再写一条",
       empty: "先写点什么吧。", noname: "请先留下你的名字。",
       error: "发送失败，请检查网络后重试。", tap: "点击暗处，播种生命" },
-    "zh-Hant": { full: '今天的信箱滿了，明天再來吧。', closed: '暫時不收留言，晚點再來看看。',
+    "zh-Hant": { badname: '這個名字不行，換一個吧。', full: '今天的信箱滿了，明天再來吧。', closed: '暫時不收留言，晚點再來看看。',
       cooldown: '{t} 後可以再傳一則。', daily: '今天已經夠多囉，明天再來吧。',
       _name: "繁體中文", leave: "給我留言吧",
       hint: "你寫下的內容只有我看得到", msg_ph: "輸入你的留言…",
@@ -292,7 +368,7 @@
       send: "傳送", sending: "傳輸中…", sent: "✓ 留言已送達。謝謝，我會盡快看。", again: "再寫一則",
       empty: "先寫點什麼吧。", noname: "請先留下你的名字。",
       error: "傳送失敗，請檢查網路後再試。", tap: "點擊暗處，播種生命" },
-    es: { full: 'Mi buzón está lleno por hoy. Vuelve mañana.', closed: 'Ahora mismo no recibo mensajes. Vuelve más tarde.',
+    es: { badname: 'Ese nombre no está permitido. Prueba otro.', full: 'Mi buzón está lleno por hoy. Vuelve mañana.', closed: 'Ahora mismo no recibo mensajes. Vuelve más tarde.',
       cooldown: 'Podrás enviar otro en {t}.', daily: 'Suficiente por hoy. Vuelve mañana.',
       _name: "Español", leave: "déjame un mensaje",
       hint: "solo yo puedo leer lo que escribas aquí", msg_ph: "escribe tu mensaje…",
@@ -300,7 +376,7 @@
       send: "enviar", sending: "transmitiendo…", sent: "✓ Mensaje entregado. Gracias, lo leeré pronto.", again: "escribir otro",
       empty: "Escribe algo primero.", noname: "Dime tu nombre primero.",
       error: "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.", tap: "toca la oscuridad para sembrar vida" },
-    hi: { full: 'आज के लिए मेरा इनबॉक्स भर गया है। कल फिर आइए।', closed: 'अभी संदेश नहीं लिए जा रहे हैं। बाद में फिर देखें।',
+    hi: { badname: 'यह नाम नहीं चलेगा। कोई दूसरा नाम चुनें।', full: 'आज के लिए मेरा इनबॉक्स भर गया है। कल फिर आइए।', closed: 'अभी संदेश नहीं लिए जा रहे हैं। बाद में फिर देखें।',
       cooldown: 'आप {t} बाद दूसरा संदेश भेज सकते हैं।', daily: 'आज के लिए इतना काफ़ी है। कल फिर आइए।',
       _name: "हिन्दी", leave: "मुझे एक संदेश छोड़ें",
       hint: "यह संदेश सिर्फ़ मुझे दिखेगा", msg_ph: "अपना संदेश लिखें…",
@@ -308,7 +384,7 @@
       send: "भेजें", sending: "भेजा जा रहा है…", sent: "✓ धन्यवाद! संदेश पहुँच गया।", again: "एक और लिखें",
       empty: "पहले कुछ लिखें।", noname: "पहले अपना नाम लिखें।",
       error: "भेजा नहीं जा सका। कनेक्शन जाँचें और फिर कोशिश करें।", tap: "जीवन बोने के लिए अँधेरे को छुएँ" },
-    ar: { full: 'صندوقي ممتلئ لهذا اليوم. عُد غدًا.', closed: 'لا أستقبل رسائل حاليًا. عُد لاحقًا.',
+    ar: { badname: 'هذا الاسم غير مسموح. جرّب اسمًا آخر.', full: 'صندوقي ممتلئ لهذا اليوم. عُد غدًا.', closed: 'لا أستقبل رسائل حاليًا. عُد لاحقًا.',
       cooldown: 'يمكنك إرسال رسالة أخرى بعد {t}.', daily: 'يكفي هذا لليوم. عُد غدًا.',
       _name: "العربية", leave: "اترك لي رسالة",
       hint: "لا أحد غيري يستطيع قراءة ما تكتبه هنا", msg_ph: "اكتب رسالتك…",
@@ -316,7 +392,7 @@
       send: "إرسال", sending: "جارٍ الإرسال…", sent: "✓ وصلت رسالتك. شكرًا، سأقرؤها قريبًا.", again: "اكتب رسالة أخرى",
       empty: "اكتب شيئًا أولًا.", noname: "اكتب اسمك أولًا.",
       error: "تعذّر الإرسال. تحقّق من اتصالك وحاول مجددًا.", tap: "المس الظلام لتزرع الحياة" },
-    bn: { full: 'আজকের জন্য আমার ইনবক্স ভরে গেছে। কাল আবার এসো।', closed: 'এখন বার্তা নেওয়া হচ্ছে না। পরে আবার দেখো।',
+    bn: { badname: 'এই নামটা চলবে না। অন্য একটা দাও।', full: 'আজকের জন্য আমার ইনবক্স ভরে গেছে। কাল আবার এসো।', closed: 'এখন বার্তা নেওয়া হচ্ছে না। পরে আবার দেখো।',
       cooldown: '{t} পরে আরেকটা পাঠাতে পারবে।', daily: 'আজকের জন্য যথেষ্ট। কাল আবার এসো।',
       _name: "বাংলা", leave: "আমাকে একটা বার্তা রেখে যাও",
       hint: "এখানে যা লিখবে, শুধু আমি পড়তে পারব", msg_ph: "তোমার বার্তা লেখো…",
@@ -324,7 +400,7 @@
       send: "পাঠাও", sending: "পাঠানো হচ্ছে…", sent: "✓ বার্তা পৌঁছেছে। ধন্যবাদ, শিগগিরই পড়ব।", again: "আরেকটা লেখো",
       empty: "আগে কিছু লেখো।", noname: "আগে তোমার নাম লেখো।",
       error: "পাঠানো যায়নি। সংযোগ দেখে আবার চেষ্টা করো।", tap: "অন্ধকারে ছুঁয়ে জীবন বোনো" },
-    pt: { full: 'Minha caixa de entrada está cheia por hoje. Volte amanhã.', closed: 'Não estou recebendo mensagens agora. Volte mais tarde.',
+    pt: { badname: 'Esse nome não é permitido. Tente outro.', full: 'Minha caixa de entrada está cheia por hoje. Volte amanhã.', closed: 'Não estou recebendo mensagens agora. Volte mais tarde.',
       cooldown: 'Você pode enviar outra em {t}.', daily: 'Já chega por hoje. Volte amanhã.',
       _name: "Português", leave: "deixe uma mensagem",
       hint: "só eu posso ler o que você escrever aqui", msg_ph: "digite sua mensagem…",
@@ -332,7 +408,7 @@
       send: "enviar", sending: "transmitindo…", sent: "✓ Mensagem entregue. Obrigado, vou ler em breve.", again: "escrever outra",
       empty: "Escreva algo primeiro.", noname: "Diga seu nome primeiro.",
       error: "Não foi possível enviar. Verifique sua conexão e tente de novo.", tap: "toque no escuro para semear vida" },
-    ru: { full: 'На сегодня мой ящик полон. Возвращайтесь завтра.', closed: 'Сейчас сообщения не принимаются. Загляните позже.',
+    ru: { badname: 'Это имя нельзя использовать. Выберите другое.', full: 'На сегодня мой ящик полон. Возвращайтесь завтра.', closed: 'Сейчас сообщения не принимаются. Загляните позже.',
       cooldown: 'Следующее сообщение можно отправить через {t}.', daily: 'На сегодня достаточно. Возвращайтесь завтра.',
       _name: "Русский", leave: "оставьте мне сообщение",
       hint: "то, что вы здесь напишете, увижу только я", msg_ph: "введите сообщение…",
@@ -340,7 +416,7 @@
       send: "отправить", sending: "передача…", sent: "✓ Сообщение доставлено. Спасибо, скоро прочитаю.", again: "написать ещё",
       empty: "Сначала напишите что-нибудь.", noname: "Сначала укажите имя.",
       error: "Не удалось отправить. Проверьте подключение и попробуйте снова.", tap: "коснитесь тьмы, чтобы посеять жизнь" },
-    ja: { full: '今日の受信箱はいっぱいです。また明日どうぞ。', closed: '現在メッセージを受け付けていません。また後で来てね。',
+    ja: { badname: 'その名前は使えません。別の名前にしてください。', full: '今日の受信箱はいっぱいです。また明日どうぞ。', closed: '現在メッセージを受け付けていません。また後で来てね。',
       cooldown: '{t}後にまた送信できます。', daily: '今日はここまで。また明日どうぞ。',
       _name: "日本語", leave: "メッセージを残してね",
       hint: "ここに書いた内容は、私だけが読めます", msg_ph: "メッセージを入力…",
@@ -348,7 +424,7 @@
       send: "送信", sending: "送信中…", sent: "✓ メッセージが届きました。ありがとう、すぐに読みます。", again: "もう一通書く",
       empty: "まず何か書いてください。", noname: "まず名前を入力してください。",
       error: "送信できませんでした。接続を確認して、もう一度お試しください。", tap: "暗闇をタップして生命を蒔こう" },
-    ko: { full: '오늘은 메시지함이 가득 찼어요. 내일 다시 와 주세요.', closed: '지금은 메시지를 받지 않아요. 나중에 다시 와 주세요.',
+    ko: { badname: '그 이름은 쓸 수 없어요. 다른 이름을 써 주세요.', full: '오늘은 메시지함이 가득 찼어요. 내일 다시 와 주세요.', closed: '지금은 메시지를 받지 않아요. 나중에 다시 와 주세요.',
       cooldown: '{t} 후에 다시 보낼 수 있어요.', daily: '오늘은 여기까지예요. 내일 다시 와 주세요.',
       _name: "한국어", leave: "메시지를 남겨 주세요",
       hint: "여기에 쓴 내용은 저만 볼 수 있어요", msg_ph: "메시지를 입력하세요…",
@@ -356,7 +432,7 @@
       send: "보내기", sending: "전송 중…", sent: "✓ 메시지가 전달됐어요. 고마워요, 곧 읽을게요.", again: "하나 더 쓰기",
       empty: "먼저 내용을 입력해 주세요.", noname: "먼저 이름을 입력해 주세요.",
       error: "전송하지 못했어요. 연결을 확인하고 다시 시도해 주세요.", tap: "어둠을 터치해 생명을 심어 보세요" },
-    de: { full: 'Mein Postfach ist für heute voll. Komm morgen wieder.', closed: 'Gerade keine Nachrichten möglich. Schau später wieder vorbei.',
+    de: { badname: 'Dieser Name ist nicht erlaubt. Versuch einen anderen.', full: 'Mein Postfach ist für heute voll. Komm morgen wieder.', closed: 'Gerade keine Nachrichten möglich. Schau später wieder vorbei.',
       cooldown: 'Du kannst in {t} wieder eine senden.', daily: 'Genug für heute. Komm morgen wieder.',
       _name: "Deutsch", leave: "hinterlass mir eine Nachricht",
       hint: "was du hier schreibst, kann nur ich lesen", msg_ph: "Nachricht eingeben…",
@@ -364,7 +440,7 @@
       send: "senden", sending: "wird übertragen…", sent: "✓ Nachricht angekommen. Danke, ich lese sie bald.", again: "noch eine schreiben",
       empty: "Schreib zuerst etwas.", noname: "Sag mir zuerst deinen Namen.",
       error: "Senden fehlgeschlagen. Prüf deine Verbindung und versuch es erneut.", tap: "tippe ins Dunkel, um Leben zu säen" },
-    fr: { full: "Ma boîte est pleine pour aujourd'hui. Reviens demain.", closed: 'Je ne reçois pas de messages pour le moment. Reviens plus tard.',
+    fr: { badname: "Ce nom n'est pas autorisé. Essaie un autre.", full: "Ma boîte est pleine pour aujourd'hui. Reviens demain.", closed: 'Je ne reçois pas de messages pour le moment. Reviens plus tard.',
       cooldown: 'Tu pourras en envoyer un autre dans {t}.', daily: "C'est assez pour aujourd'hui. Reviens demain.",
       _name: "Français", leave: "laisse-moi un message",
       hint: "personne d'autre que moi ne pourra lire ce que tu écris ici", msg_ph: "écris ton message…",
@@ -372,7 +448,7 @@
       send: "envoyer", sending: "transmission…", sent: "✓ Message reçu. Merci, je le lirai bientôt.", again: "en écrire un autre",
       empty: "Écris quelque chose d'abord.", noname: "Dis-moi d'abord ton nom.",
       error: "Échec de l'envoi. Vérifie ta connexion et réessaie.", tap: "touche l'obscurité pour semer la vie" },
-    id: { full: 'Kotak masukku penuh untuk hari ini. Datang lagi besok.', closed: 'Sedang tidak menerima pesan. Coba lagi nanti.',
+    id: { badname: 'Nama itu tidak diizinkan. Coba yang lain.', full: 'Kotak masukku penuh untuk hari ini. Datang lagi besok.', closed: 'Sedang tidak menerima pesan. Coba lagi nanti.',
       cooldown: 'Kamu bisa mengirim lagi dalam {t}.', daily: 'Cukup untuk hari ini. Datang lagi besok.',
       _name: "Bahasa Indonesia", leave: "tinggalkan pesan untukku",
       hint: "hanya aku yang bisa membaca apa yang kamu tulis di sini", msg_ph: "tulis pesanmu…",
@@ -380,7 +456,7 @@
       send: "kirim", sending: "mengirim…", sent: "✓ Pesan terkirim. Terima kasih, akan segera kubaca.", again: "tulis lagi",
       empty: "Tulis sesuatu dulu.", noname: "Tulis namamu dulu.",
       error: "Gagal mengirim. Periksa koneksimu dan coba lagi.", tap: "ketuk kegelapan untuk menabur kehidupan" },
-    tr: { full: 'Bugünlük gelen kutum dolu. Yarın tekrar gel.', closed: 'Şu an mesaj almıyorum. Sonra tekrar uğra.',
+    tr: { badname: 'Bu isme izin verilmiyor. Başka bir tane dene.', full: 'Bugünlük gelen kutum dolu. Yarın tekrar gel.', closed: 'Şu an mesaj almıyorum. Sonra tekrar uğra.',
       cooldown: '{t} sonra tekrar gönderebilirsin.', daily: 'Bugünlük bu kadar yeter. Yarın tekrar gel.',
       _name: "Türkçe", leave: "bana bir mesaj bırak",
       hint: "buraya yazdıklarını yalnızca ben okuyabilirim", msg_ph: "mesajını yaz…",
@@ -388,7 +464,7 @@
       send: "gönder", sending: "iletiliyor…", sent: "✓ Mesaj ulaştı. Teşekkürler, yakında okuyacağım.", again: "bir tane daha yaz",
       empty: "Önce bir şey yaz.", noname: "Önce adını yaz.",
       error: "Gönderilemedi. Bağlantını kontrol edip tekrar dene.", tap: "hayat ekmek için karanlığa dokun" },
-    vi: { full: 'Hộp thư hôm nay đã đầy. Mai quay lại nhé.', closed: 'Hiện chưa nhận tin nhắn. Quay lại sau nhé.',
+    vi: { badname: 'Tên này không được phép. Hãy chọn tên khác.', full: 'Hộp thư hôm nay đã đầy. Mai quay lại nhé.', closed: 'Hiện chưa nhận tin nhắn. Quay lại sau nhé.',
       cooldown: 'Bạn có thể gửi tiếp sau {t}.', daily: 'Hôm nay vậy là đủ rồi. Mai quay lại nhé.',
       _name: "Tiếng Việt", leave: "để lại lời nhắn cho tôi nhé",
       hint: "chỉ mình tôi đọc được những gì bạn viết ở đây", msg_ph: "nhập tin nhắn…",
@@ -686,12 +762,328 @@
     };
   })();
 
+  /* ───────── Pixel avatars (12×16, original art) ───────── */
+  const Av = (() => {
+    const SKINS = ["#f1d3b8", "#e0b48f", "#c48a62", "#8d5a3b", "#5a3a28", "#9fbf8a", "#b8c4d8"];
+    const EYE = "#141414";
+    const BASE = [
+      "............", "............", "............",
+      "....SSSS....", "...SSSSSS...", "...SSSSSS...",
+      "...SESSES...", "...SSSSSS...", "....SSSS...."
+    ];
+    // heads draw over rows 0–8; "S" = skin, "." = see-through
+    const HEADS = [
+      { pal: { H: "#4a3426" }, rows: { 3: "...HHHHHH...", 4: "..HHHHHHHH..", 5: "..H......H..", 6: "..H......H.." } },                                   // short hair
+      { pal: { H: "#3b4a8a", D: "#26306b", A: "#e8c55a" }, rows: { 0: ".......HH...", 1: "......HHH...", 2: ".....HAHH...", 3: "....HHHHH...", 4: ".DDDDDDDDDD." } }, // wizard hat
+      { pal: { H: "#a9b0bb", D: "#4b525d", A: "#b8443a" }, rows: { 0: "......AA....", 1: ".....AA.....", 2: "...HHHHHH...", 3: "..HHHHHHHH..", 4: "..HHHHHHHH..", 5: "..HDDDDDDH..", 6: "..HD.DD.DH..", 7: "..HHHHHHHH..", 8: "...HHHHHH..." } }, // knight helm
+      { pal: { H: "#4f7a4a", D: "#2c4527" }, rows: { 2: "....HHHH....", 3: "...HHHHHH...", 4: "..HHHHHHHH..", 5: "..HD....DH..", 6: "..HD....DH..", 7: "..HD....DH..", 8: "..HH....HH.." } }, // hood
+      { pal: { H: "#d8d2c0", K: "#2a2a33" }, rows: { 0: ".H........H.", 1: ".H........H.", 2: "..H......H..", 3: "..HKKKKKKH..", 4: "...KKKKKK..." } }, // horns
+      { pal: { H: "#6fbf7f", A: "#ece8df", D: "#c8b89a" }, rows: { 0: "....HHHH....", 1: "..HHAHHHHH..", 2: ".HHHHHHAHHH.", 3: ".HAHHHHHHHH.", 4: ".DDDDDDDDDD." } }, // mushroom cap
+      { pal: { A: "#e0b84f", D: "#b8443a", K: "#6b4a2b" }, rows: { 2: "...A.AA.A...", 3: "...AADDAA...", 4: "..KKKKKKKK..", 5: "..K......K.." } }, // crown
+      { pal: { K: "#d9c27a" }, rows: { 3: "...KKKKKK...", 4: "..KKKKKKKK..", 5: "..K......K..", 6: ".SK......KS.", 7: "..K......K..", 8: "..K......K.." } }  // elf
+    ];
+    // outfits draw rows 9–15
+    const OUTFITS = [
+      { pal: { O: "#8a5a3b", D: "#5b3a26", A: "#c9a14a", L: "#4a4a55", B: "#3a2a20" }, rows: ["..OOODDOOO..", "..OOOOOOOO..", "..OAAAAAAO..", "..SOOOOOOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }, // wanderer
+      { pal: { O: "#3b4a8a", D: "#26306b", A: "#e8c55a" }, rows: ["..OOODDOOO..", "..OOOOOAOO..", "..OOAOOOOO..", "..SOOOOOAS..", "...OOOOOO...", "...OOOOOO...", "...DDDDDD..."] }, // wizard robe
+      { pal: { O: "#a9b0bb", D: "#5d6570", A: "#b8443a", B: "#4b525d" }, rows: ["..DOOOOOOD..", "..OOOAAOOO..", "..OOOAAOOO..", "..DOOAAOOD..", "...ODAADO...", "...OO..OO...", "...BB..BB..."] }, // knight
+      { pal: { O: "#4f7a4a", D: "#2c4527", A: "#8a6a45", L: "#5a4a3a", B: "#3a2a20" }, rows: ["..DDDDDDDD..", "..DOOAAOOD..", "..DOOAAOOD..", "..SOOOOOOS..", "..DOOOOOOD..", "...LL..LL...", "...BB..BB..."] }, // ranger
+      { pal: { O: "#3a3a48", D: "#22222c", A: "#d8d2c0", G: "#9fe0a8" }, rows: ["..OOAAAAOO..", "..OOOOOOOO..", "..OOOGGOOO..", "..SOOOOOOS..", "...OOOOOO...", "...OOOOOO...", "...DDDDDD..."] }, // necromancer
+      { pal: { O: "#9b3b4f", D: "#e8e2d0", A: "#e0b84f", L: "#3b3b5a", B: "#2a2020" }, rows: ["..DOOAAOOD..", "..DOOOOOOD..", "..DOAOOAOD..", "..SOOOOOOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }, // bard
+      { pal: { O: "#6f8f4e", D: "#4b6636", A: "#9fe0a8" }, rows: ["..OODDDDOO..", "..OAOOOOAO..", "..OOOOAOOO..", "..SOAOOOOS..", "...OOOOOO...", "...OOOOOO...", "...DDDDDD..."] }, // druid
+      { pal: { O: "#4d4848", D: "#2e2b2b", A: "#8a6a45", L: "#353131", B: "#1f1c1c" }, rows: ["..OOAOOOOO..", "..OOOAOOOO..", "..OOOOAOOO..", "..SOOOOAOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }  // rogue
+    ];
+
+    const parse = (code) => {
+      const p = String(code || "").split("-").map(n => parseInt(n, 10));
+      if (p.length !== 3 || p.some(n => isNaN(n) || n < 0)) return null;
+      return [p[0] % HEADS.length, p[1] % OUTFITS.length, p[2] % SKINS.length];
+    };
+    function paint(g, lines, y0, pal, skin) {
+      for (const [ry, line] of lines) {
+        for (let x = 0; x < 12; x++) {
+          const c = line[x];
+          if (!c || c === ".") continue;
+          g.fillStyle = c === "S" ? skin : c === "E" ? EYE : pal[c];
+          g.fillRect(x, y0 + ry, 1, 1);
+        }
+      }
+    }
+    const cache = new Map();
+    function frames(code) {
+      const p = parse(code);
+      if (!p) return null;
+      const key = p.join("-");
+      if (cache.has(key)) return cache.get(key);
+      const [h, o, s] = p, skin = SKINS[s], head = HEADS[h], fit = OUTFITS[o];
+      const make = (walk) => {
+        const c = document.createElement("canvas"); c.width = 12; c.height = 16;
+        const g = c.getContext("2d");
+        paint(g, BASE.map((l, i) => [i, l]), 0, {}, skin);
+        paint(g, fit.rows.map((l, i) => [i, l]), 9, fit.pal, skin);
+        paint(g, Object.entries(head.rows).map(([k, v]) => [+k, v]), 0, head.pal, skin);
+        if (walk) {                                   // step: boots spread apart
+          const line = fit.rows[6];
+          if (line.includes("B")) {
+            g.clearRect(0, 15, 12, 1);
+            for (let x = 0; x < 12; x++) {
+              const ch = line[x]; if (ch === ".") continue;
+              g.fillStyle = fit.pal[ch];
+              g.fillRect(ch === "B" ? (x < 6 ? x - 1 : x + 1) : x, 15, 1, 1);
+            }
+          }
+        }
+        return c;
+      };
+      const f = [make(false), make(true)];
+      cache.set(key, f);
+      return f;
+    }
+    return { SKINS, nH: HEADS.length, nO: OUTFITS.length, frames, parse };
+  })();
+
+  /* ───────── The town: buildings, bonfire and visitors ───────── */
+  const Town = (() => {
+    const wrap = document.getElementById("town");
+    const cv = document.getElementById("townCanvas");
+    const g = cv.getContext("2d");
+    const bubble = document.getElementById("bubble");
+    const HU = 44, GROUND = 34, CANVAS_TOP = 18;   // height in pixel units; buildings stand on GROUND
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let W = 0, cx = 0, unit = 3, statics = null;
+    let visitors = [], people = [], sparks = [], flames = [0, 0, 0, 0, 0, 0, 0];
+    let running = false, last = 0, flameT = 0, focus = null, focusUntil = 0, built = false;
+
+    const seeded = (seed) => () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+
+    function building(b, type, x, r) {
+      const wall = "#131819", roof = "#1d2627", door = "#070909", warm = "#f0c96a", dark = "#1f2829";
+      const lit = () => (r() < 0.78 ? warm : dark);
+      if (type === "house") {
+        const w = 11 + Math.floor(r() * 6), h = 8 + Math.floor(r() * 4), top = GROUND - h;
+        b.fillStyle = wall; b.fillRect(x, top, w, h);
+        b.fillStyle = roof;
+        for (let i = 0; w + 2 - 2 * i > 0; i++) b.fillRect(x - 1 + i, top - 1 - i, w + 2 - 2 * i, 1);
+        b.fillStyle = door; b.fillRect(x + (w >> 1) - 1, GROUND - 3, 2, 3);
+        b.fillStyle = lit(); b.fillRect(x + 2, top + 2, 2, 2);
+        b.fillStyle = lit(); b.fillRect(x + w - 4, top + 2, 2, 2);
+        return w;
+      }
+      if (type === "tower") {
+        const w = 7 + Math.floor(r() * 3), h = 17 + Math.floor(r() * 6), top = GROUND - h;
+        b.fillStyle = wall; b.fillRect(x, top, w, h);
+        b.fillStyle = roof;
+        for (let i = 0; w + 2 - 2 * Math.floor(i / 2) > 0; i++) {
+          const ww = w + 2 - 2 * Math.floor(i / 2);
+          b.fillRect(x - 1 + Math.floor(i / 2), top - 1 - i, ww, 1);
+        }
+        b.fillStyle = lit(); b.fillRect(x + (w >> 1), top + 3, 1, 2);
+        b.fillStyle = lit(); b.fillRect(x + (w >> 1), top + 9, 1, 2);
+        b.fillStyle = door; b.fillRect(x + (w >> 1) - 1, GROUND - 3, 2, 3);
+        return w;
+      }
+      // tavern
+      const w = 20 + Math.floor(r() * 5), h = 11, top = GROUND - h;
+      b.fillStyle = wall; b.fillRect(x, top, w, h);
+      b.fillStyle = roof;
+      for (let i = 0; i < 4; i++) b.fillRect(x - 1 + i * 2, top - 1 - i, w + 2 - i * 4, 1);
+      b.fillStyle = warm; b.fillRect(x + 3, top + 3, 3, 2); b.fillRect(x + w - 6, top + 3, 3, 2);
+      b.fillStyle = door; b.fillRect(x + (w >> 1) - 1, GROUND - 4, 3, 4);
+      b.fillStyle = "#3a3226"; b.fillRect(x + w, top + 2, 3, 1);
+      b.fillStyle = "#c9a14a"; b.fillRect(x + w + 1, top + 3, 2, 2);
+      return w;
+    }
+
+    function layout() {
+      const cssW = wrap.clientWidth || innerWidth;
+      W = Math.max(60, Math.ceil(cssW / 3));
+      unit = cssW / W;
+      cx = W >> 1;
+      cv.width = W; cv.height = HU;
+      statics = document.createElement("canvas");
+      statics.width = W; statics.height = HU;
+      const b = statics.getContext("2d"), r = seeded(W * 31 + 14);
+      const fade = b.createLinearGradient(0, 0, 0, GROUND);
+      fade.addColorStop(0, "rgba(0,0,0,0)"); fade.addColorStop(1, "rgba(0,0,0,.92)");
+      b.fillStyle = fade; b.fillRect(0, 0, W, GROUND);
+      const fill = (from, to) => {
+        let x = from + Math.floor(r() * 4);
+        while (x < to) {
+          const roll = r(), type = roll < 0.5 ? "house" : roll < 0.75 ? "tower" : "tavern";
+          const need = type === "house" ? 18 : type === "tower" ? 10 : 28;
+          if (x + need > to) break;
+          x += building(b, type, x, r) + 3 + Math.floor(r() * 6);
+        }
+      };
+      fill(1, cx - 13);
+      fill(cx + 13, W - 1);
+      b.fillStyle = "#0a0d0b"; b.fillRect(0, GROUND, W, HU - GROUND);
+      b.fillStyle = "#1f2d22"; b.fillRect(0, GROUND, W, 1);
+      for (let i = 0; i < W / 3; i++) {
+        b.fillStyle = r() < 0.5 ? "#203227" : "#141d17";
+        b.fillRect(Math.floor(r() * W), GROUND + 1 + Math.floor(r() * (HU - GROUND - 1)), 1, 1);
+      }
+      for (const p of people) p.x = Math.min(p.x, W - 13);
+    }
+
+    function person(v, i) {
+      const spread = reduced || !built;
+      return {
+        v, frames: Av.frames(v.a), feet: 37 + Math.floor(Math.random() * 7),
+        x: spread ? 2 + ((i * 37) % Math.max(1, W - 16)) : 2 + Math.random() * (W - 16),
+        dir: Math.random() < 0.5 ? -1 : 1, state: "idle", timer: Math.random() * 3, speed: 0, target: 0, ft: 0
+      };
+    }
+    function populate() {
+      if (!W) return;
+      const max = Math.max(6, Math.min(40, Math.floor(W / 7)));
+      const mine = people.filter(p => p.v.me);
+      const rest = visitors.filter(v => Av.parse(v.a) && !mine.some(m => m.v.t === v.t && m.v.n === v.n))
+                           .slice(0, max - mine.length);
+      people = [...mine, ...rest.map(person)];
+    }
+
+    function think(p, dt) {
+      if (p.state === "idle") {
+        p.timer -= dt;
+        if (p.timer > 0) return;
+        if (Math.random() < 0.22) {                  // drift to the fire
+          const side = Math.random() < 0.5 ? -1 : 1;
+          p.target = cx + side * (9 + Math.random() * 14) - 6;
+        } else {
+          p.target = 1 + Math.random() * (W - 14);
+        }
+        p.target = Math.max(1, Math.min(W - 13, p.target));
+        p.speed = 5 + Math.random() * 5;
+        p.state = "walk";
+        return;
+      }
+      const d = p.target - p.x;
+      p.dir = d < 0 ? -1 : 1;
+      p.x += p.dir * Math.min(Math.abs(d), p.speed * dt);
+      p.ft += dt;
+      if (Math.abs(p.target - p.x) < 0.3) {
+        p.state = "idle";
+        p.timer = 2 + Math.random() * 7;
+        if (Math.abs(p.x + 6 - cx) < 20) p.dir = p.x + 6 < cx ? 1 : -1;   // face the fire
+      }
+    }
+
+    function drawPerson(p) {
+      const walking = p.state === "walk", step = walking && Math.floor(p.ft * 6) % 2 === 1;
+      const img = p.frames[step ? 1 : 0], x = Math.round(p.x), y = p.feet - 16 - (step ? 1 : 0);
+      g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(x + 3, p.feet, 6, 1);
+      if (p.dir < 0) { g.save(); g.translate(x + 12, y); g.scale(-1, 1); g.drawImage(img, 0, 0); g.restore(); }
+      else g.drawImage(img, x, y);
+    }
+
+    function drawFire(t) {
+      const fy = 41;
+      const glow = g.createRadialGradient(cx, fy - 3, 1, cx, fy - 3, 22);
+      const a = 0.2 + Math.sin(t * 7) * 0.03 + Math.random() * 0.03;
+      glow.addColorStop(0, `rgba(240,150,70,${a})`); glow.addColorStop(1, "rgba(240,150,70,0)");
+      g.fillStyle = glow; g.fillRect(cx - 24, fy - 26, 48, 30);
+      g.fillStyle = "#2a2f2c"; g.fillRect(cx - 5, fy, 1, 1); g.fillRect(cx + 5, fy, 1, 1);
+      g.fillStyle = "#6b4428"; g.fillRect(cx - 4, fy, 4, 1); g.fillRect(cx + 1, fy, 4, 1);
+      g.fillStyle = "#4a2e1a"; g.fillRect(cx - 3, fy - 1, 7, 1);
+      flames.forEach((h, i) => {
+        for (let j = 0; j < h; j++) {
+          const f = j / h;
+          g.fillStyle = f < 0.35 ? "#c8442f" : f < 0.7 ? "#f08a3a" : "#f5d36b";
+          g.fillRect(cx - 3 + i, fy - 2 - j, 1, 1);
+        }
+      });
+      for (const s of sparks) {
+        g.fillStyle = s.c ? `rgba(159,224,168,${s.life})` : `rgba(245,211,107,${s.life})`;
+        g.fillRect(Math.round(s.x), Math.round(s.y), 1, 1);
+      }
+    }
+
+    function frame(ts) {
+      const now = ts / 1000;
+      const dt = Math.min(0.05, last ? now - last : 0); last = now;
+      if (!reduced) {
+        flameT -= dt;
+        if (flameT <= 0) {
+          flameT = 0.11;
+          flames = [2, 4, 6, 7, 6, 4, 2].map(b => Math.max(1, Math.round(b * (0.6 + Math.random() * 0.55))));
+          if (Math.random() < 0.35) sparks.push({ x: cx - 1 + Math.random() * 3, y: 33, vx: (Math.random() - 0.5) * 3, vy: -6 - Math.random() * 6, life: 1 });
+        }
+        for (const s of sparks) { s.x += s.vx * dt; s.y += s.vy * dt; s.life -= dt * (s.c ? 0.8 : 0.9); }
+        sparks = sparks.filter(s => s.life > 0);
+        for (const p of people) if (p !== focus || ts > focusUntil) think(p, dt);
+      } else if (!flames[3]) flames = [2, 4, 6, 7, 6, 4, 2];
+
+      g.clearRect(0, 0, W, HU);
+      g.drawImage(statics, 0, 0);
+      const order = [...people].sort((a, b) => a.feet - b.feet);
+      let fireDrawn = false;
+      for (const p of order) {
+        if (!fireDrawn && p.feet > 41) { drawFire(now); fireDrawn = true; }
+        drawPerson(p);
+      }
+      if (!fireDrawn) drawFire(now);
+
+      if (focus && ts < focusUntil) {
+        bubble.hidden = false;
+        bubble.style.left = (Math.round(focus.x) + 6) * unit + "px";
+        bubble.style.top = CANVAS_TOP + (focus.feet - 17) * unit + "px";
+      } else if (!bubble.hidden) { bubble.hidden = true; focus = null; }
+
+      if (running && !reduced) requestAnimationFrame(frame);
+    }
+
+    function show(p, ms = 4000) {
+      focus = p;
+      focusUntil = performance.now() + ms;
+      const when = new Intl.DateTimeFormat(lang, { month: "short", year: "numeric" }).format(p.v.t);
+      bubble.replaceChildren(
+        document.createTextNode(String(p.v.n).slice(0, 24)),
+        Object.assign(document.createElement("span"), { className: "d", textContent: " · " + when })
+      );
+    }
+
+    cv.addEventListener("pointerdown", (e) => {
+      const r = cv.getBoundingClientRect();
+      const ux = (e.clientX - r.left) / r.width * W, uy = (e.clientY - r.top) / r.height * HU;
+      const hit = [...people].sort((a, b) => b.feet - a.feet)
+        .find(p => ux >= p.x + 1 && ux <= p.x + 11 && uy >= p.feet - 17 && uy <= p.feet + 1);
+      if (hit) { show(hit); Sound.key(); if (reduced) frame(performance.now()); }
+    });
+    addEventListener("resize", () => { if (built) { layout(); if (reduced) frame(performance.now()); } });
+
+    return {
+      setVisitors(list) {
+        visitors = (list || []).slice().sort((a, b) => b.t - a.t);
+        populate();
+        if (built && reduced) frame(performance.now());
+      },
+      start() {
+        built = true;
+        layout(); populate();
+        running = true;
+        requestAnimationFrame(frame);
+        // after a moment, introduce the most recent visitor so people learn they can tap
+        setTimeout(() => { const p = people.find(q => !q.v.me) || people[0]; if (p) show(p, 3500); if (reduced) frame(performance.now()); }, 1800);
+      },
+      addMe(v) {
+        const p = person({ ...v, me: true }, people.length);
+        p.x = Math.max(1, Math.min(W - 13, cx + (Math.random() < 0.5 ? -18 : 6)));
+        people.unshift(p);
+        for (let i = 0; i < 14; i++) sparks.push({ x: p.x + 2 + Math.random() * 8, y: p.feet - 2 - Math.random() * 14, vx: (Math.random() - 0.5) * 4, vy: -4 - Math.random() * 6, life: 1, c: true });
+        show(p, 4500);
+        if (reduced) frame(performance.now());
+      }
+    };
+  })();
+
   /* ───────── Intro sequence ───────── */
   const nameLine = document.getElementById("nameLine");
   const typed = document.getElementById("typed");
   const askLine = document.getElementById("askLine");
   const askText = document.getElementById("askText");
   const box = document.getElementById("box");
+  const townEl = document.getElementById("town");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
   let skipping = reduced;
   const wait = (ms) => skipping ? Promise.resolve() : new Promise(r => setTimeout(r, ms));
@@ -723,6 +1115,7 @@
     const before = nameLine.getBoundingClientRect().top;
     askLine.classList.remove("later"); askLine.classList.add("ghosted");
     box.classList.remove("later"); box.classList.add("ghosted");
+    townEl.classList.remove("later"); townEl.classList.add("ghosted");
     const after = nameLine.getBoundingClientRect().top;
     if (skipping) return;
     nameLine.style.transform = `translateY(${before - after}px)`;
@@ -748,8 +1141,10 @@
 
   function reveal() {
     box.classList.remove("ghosted");
-    ["topLeft", "topRight", "hint"].forEach(id => document.getElementById(id).classList.remove("ghosted"));
+    ["topLeft", "topRight"].forEach(id => document.getElementById(id).classList.remove("ghosted"));
+    townEl.classList.remove("ghosted");
     life.start(!reduced);
+    Town.start();
   }
 
   async function intro() {
@@ -790,6 +1185,47 @@
   msg.addEventListener("input", () => { countEl.textContent = msg.value.length + "/1000"; grow(); clearErr(); });
   sender.addEventListener("input", clearErr);
   msg.addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) form.requestSubmit(); });
+
+  /* ───────── Character creator ───────── */
+  const look = (() => {
+    const saved = Av.parse(store.get("g14-look"));
+    return saved || [Math.floor(Math.random() * Av.nH), Math.floor(Math.random() * Av.nO), Math.floor(Math.random() * Av.SKINS.length)];
+  })();
+  const lookCode = () => look.join("-");
+  const preview = document.getElementById("preview"), pg = preview.getContext("2d");
+  const skinsEl = document.getElementById("skins");
+  Av.SKINS.forEach((c, i) => {
+    const b = Object.assign(document.createElement("button"), { type: "button", className: "sk" });
+    b.style.background = c; b.setAttribute("aria-label", "Skin " + (i + 1));
+    b.addEventListener("click", () => { look[2] = i; Sound.key(); renderLook(); });
+    skinsEl.appendChild(b);
+  });
+  let previewStep = 0;
+  function drawPreview() {
+    const f = Av.frames(lookCode());
+    pg.clearRect(0, 0, 12, 16);
+    pg.drawImage(f[previewStep], 0, 0);
+  }
+  function renderLook() {
+    document.getElementById("lblHead").textContent = `head ${look[0] + 1}/${Av.nH}`;
+    document.getElementById("lblFit").textContent = `outfit ${look[1] + 1}/${Av.nO}`;
+    [...skinsEl.children].forEach((b, i) => b.setAttribute("aria-pressed", String(i === look[2])));
+    store.set("g14-look", lookCode());
+    drawPreview();
+  }
+  document.querySelectorAll(".arw").forEach(b => b.addEventListener("click", () => {
+    const k = +b.dataset.k, n = k === 0 ? Av.nH : Av.nO;
+    look[k] = (look[k] + +b.dataset.d + n) % n;
+    Sound.key(); renderLook();
+  }));
+  document.getElementById("dice").addEventListener("click", () => {
+    look[0] = Math.floor(Math.random() * Av.nH);
+    look[1] = Math.floor(Math.random() * Av.nO);
+    look[2] = Math.floor(Math.random() * Av.SKINS.length);
+    Sound.snap(); renderLook();
+  });
+  renderLook();
+  if (!reduced) setInterval(() => { previewStep ^= 1; drawPreview(); }, 380);
 
   /* ───────── Rate limit (per visitor, stored on their device) ───────── */
   const againBtn = document.getElementById("again");
@@ -833,6 +1269,7 @@
   // ask the sheet up front whether today's cap is used up, so nobody types into a closed inbox
   fetch(SCRIPT_URL).then(r => r.json()).then(d => {
     if (d && d.ok && d.open === false) { serverBlock = "full"; tick(); }
+    if (d && Array.isArray(d.avatars)) Town.setVisitors(d.avatars);
   }).catch(() => {});
 
   form.addEventListener("submit", async (e) => {
@@ -847,7 +1284,7 @@
     sendBtn.disabled = true;
     sendLabel.dataset.i18n = "sending"; sendLabel.textContent = t("sending");
     Sound.transmit();
-    const payload = { name: who, contact: reach, message: text, language: lang, botcheck: false };
+    const payload = { name: who, contact: reach, message: text, language: lang, avatar: lookCode(), botcheck: false };
     try {
       // text/plain keeps this a "simple" request, which Google's servers accept from any site
       const res = await fetch(SCRIPT_URL, {
@@ -857,6 +1294,7 @@
       });
       const data = await res.json();
       if (!data.ok) {
+        if (data.reason === "name") return showErr("badname", sender);
         if (data.reason === "cap" || data.reason === "closed") {
           serverBlock = data.reason === "cap" ? "full" : "closed";
           Sound.error();
@@ -869,6 +1307,7 @@
       form.hidden = true; done.hidden = false;
       logSend();
       Sound.success();
+      Town.addMe({ n: who, a: lookCode(), t: Date.now() });
     } catch {
       showErr("error");
     } finally {
