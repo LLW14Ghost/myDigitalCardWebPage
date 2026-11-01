@@ -115,12 +115,34 @@
   }
   .box.ghosted { transform: translateY(14px); }
   .comment { color: var(--dim); font-size: 12px; margin-bottom: 10px; }
-  .field { display: flex; gap: 8px; align-items: flex-start; }
-  .field + .field { margin-top: 8px; }
-  .field .p, .field .flag { flex: none; width: 62px; white-space: nowrap; }
-  .field .p { color: var(--spore); padding-top: 7px; }
-  .field .flag { color: var(--dim); padding-top: 9px; font-size: 12px; }
-  .field .flag.req::after { content: "*"; color: var(--spore); margin-left: 2px; }
+  .step + .step { margin-top: 14px; }
+  .q { color: var(--muted); font-size: 14px; min-height: 1.6em; }
+  .q .tri { color: var(--spore); font-size: 10px; margin-right: 2px; }
+  .past {
+    display: block; max-width: 100%;
+    background: none; border: 0; padding: 3px 0 0; cursor: pointer;
+    font: 15px/1.5 var(--mono); color: var(--text); text-align: start;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .past::before { content: "> "; color: var(--dim); }
+  .past:hover, .past:focus-visible { color: var(--spore); outline: none; }
+  .entry { display: flex; gap: 8px; align-items: flex-start; margin-top: 6px; }
+  .entry .p { color: var(--spore); flex: none; padding-top: 8px; }
+  .go {
+    flex: none; width: 42px; height: 38px;
+    background: rgba(0,0,0,.4); border: 1px solid var(--line); border-radius: 0;
+    color: var(--spore); font: 15px var(--mono); cursor: pointer; padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .go:hover, .go:focus-visible { border-color: rgba(159,224,168,.5); outline: none; }
+  .go:active { transform: scale(.95); }
+  .cnt { text-align: right; color: var(--dim); font-size: 11px; margin-top: 4px; }
+  .under { display: flex; justify-content: flex-end; margin-top: 4px; }
+  .btn.small { font-size: 13px; padding: 8px 2px; }
+  .step:not(.active) .entry, .step:not(.active) .cnt, .step:not(.active) .under,
+  .step:not(.active) .creator, .step:not(.active) .actions { display: none; }
+  .step.active .past { display: none; }
   textarea, input[type=text] {
     flex: 1; min-width: 0;
     background: rgba(255,255,255,.025);
@@ -131,7 +153,7 @@
     -webkit-appearance: none; appearance: none;
     transition: border-color .2s;
   }
-  textarea { min-height: 104px; resize: none; overflow: hidden; }
+  textarea { min-height: 38px; resize: none; overflow: hidden; }
   ::placeholder { color: var(--dim); }
   textarea:focus, input:focus { outline: none; border-color: rgba(159,224,168,.5); }
   .bad { border-color: rgba(240,163,154,.6) !important; }
@@ -219,28 +241,28 @@
   }
   .bubble .d { color: var(--dim); }
 
-  /* ── character creator ── */
+  /* ── character creator (sized for thumbs) ── */
   .creator {
-    flex: 1; min-width: 0;
-    display: flex; align-items: center; gap: 12px;
+    display: grid; grid-template-columns: auto 1fr; gap: 12px 14px; align-items: center;
+    margin-top: 8px; padding: 12px;
     border: 1px solid var(--line); background: rgba(255,255,255,.025);
-    padding: 8px 10px;
   }
-  #preview { width: 48px; height: 64px; flex: none; image-rendering: pixelated; image-rendering: crisp-edges; }
-  .picks { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
-  .pick { display: flex; align-items: center; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--muted); }
-  .pick .pl { flex: 1; text-align: center; white-space: nowrap; }
+  #preview { width: 72px; height: 96px; image-rendering: pixelated; image-rendering: crisp-edges; }
+  .picks { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+  .pick { display: flex; align-items: center; gap: 6px; }
+  .pick .pl { flex: 1; text-align: center; white-space: nowrap; font-size: 13px; color: var(--muted); }
   .arw, .dice {
     background: rgba(0,0,0,.4); border: 1px solid var(--line); border-radius: 0;
-    color: var(--spore); cursor: pointer; padding: 0;
+    color: var(--spore); cursor: pointer; padding: 0; flex: none;
     -webkit-tap-highlight-color: transparent;
   }
-  .arw { width: 28px; height: 24px; font-size: 9px; flex: none; }
-  .dice { width: 28px; height: 28px; font-size: 17px; line-height: 1; align-self: flex-start; flex: none; }
+  .arw { width: 44px; height: 40px; font-size: 12px; }
+  .dice { width: 44px; height: 40px; font-size: 20px; line-height: 1; }
   .arw:hover, .dice:hover, .arw:focus-visible, .dice:focus-visible { border-color: rgba(159,224,168,.5); outline: none; }
   .arw:active, .dice:active { transform: scale(.94); }
-  .skins { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; padding-top: 2px; }
-  .sk { width: 14px; height: 14px; border: 0; border-radius: 0; padding: 0; cursor: pointer; }
+  .tones { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .skins { display: flex; flex-wrap: wrap; gap: 7px; }
+  .sk { width: 26px; height: 26px; border: 0; border-radius: 0; padding: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
   .sk[aria-pressed="true"] { box-shadow: 0 0 0 2px #000, 0 0 0 3px var(--spore); }
   .sk:focus-visible { outline: 1px solid var(--spore); outline-offset: 3px; }
 
@@ -308,22 +330,43 @@
   </p>
 
   <section class="box later" id="box">
-    <form id="msg-form" novalidate>
+    <form id="msg-form" novalidate autocomplete="off">
       <p class="comment" dir="auto"># <span data-i18n="hint"></span></p>
-      <div class="field">
-        <span class="p">&gt;</span>
-        <textarea id="message" name="message" maxlength="1000" dir="auto" data-i18n-ph="msg_ph" required></textarea>
+
+      <div class="step" id="st-name" hidden>
+        <p class="q" dir="auto"><span class="tri">▸</span> <span class="qt"></span></p>
+        <button type="button" class="past" dir="auto"></button>
+        <div class="entry">
+          <span class="p">&gt;</span>
+          <input type="text" id="sender" name="sender" maxlength="60" dir="auto" data-i18n-ph="name_ph" autocomplete="nickname" enterkeyhint="next">
+          <button type="button" class="go" aria-label="Next">↵</button>
+        </div>
       </div>
-      <div class="field">
-        <label class="flag req" for="sender">--name</label>
-        <input type="text" id="sender" name="sender" maxlength="60" dir="auto" data-i18n-ph="name_ph" autocomplete="nickname" required>
+
+      <div class="step" id="st-msg" hidden>
+        <p class="q" dir="auto"><span class="tri">▸</span> <span class="qt"></span></p>
+        <button type="button" class="past" dir="auto"></button>
+        <div class="entry">
+          <span class="p">&gt;</span>
+          <textarea id="message" name="message" rows="1" maxlength="1000" dir="auto" data-i18n-ph="msg_ph" enterkeyhint="next"></textarea>
+          <button type="button" class="go" aria-label="Next">↵</button>
+        </div>
+        <p class="cnt"><span id="count">0/1000</span></p>
       </div>
-      <div class="field">
-        <label class="flag" for="contact">--reply</label>
-        <input type="text" id="contact" name="contact" maxlength="120" dir="auto" data-i18n-ph="contact_ph" autocomplete="off">
+
+      <div class="step" id="st-contact" hidden>
+        <p class="q" dir="auto"><span class="tri">▸</span> <span class="qt"></span></p>
+        <button type="button" class="past" dir="auto"></button>
+        <div class="entry">
+          <span class="p">&gt;</span>
+          <input type="text" id="contact" name="contact" maxlength="120" dir="auto" data-i18n-ph="contact_ph" autocomplete="off" enterkeyhint="next">
+          <button type="button" class="go" aria-label="Next">↵</button>
+        </div>
+        <div class="under"><button type="button" class="btn small" id="skip"><span class="k">[</span> <span class="label" data-i18n="skip"></span> <span class="k">]</span></button></div>
       </div>
-      <div class="field">
-        <span class="flag">--look</span>
+
+      <div class="step" id="st-look" hidden>
+        <p class="q" dir="auto"><span class="tri">▸</span> <span class="qt"></span></p>
         <div class="creator">
           <canvas id="preview" width="12" height="16" aria-hidden="true"></canvas>
           <div class="picks">
@@ -337,17 +380,20 @@
               <span class="pl" id="lblFit">outfit</span>
               <button type="button" class="arw" data-k="1" data-d="1" aria-label="Next outfit">▶</button>
             </div>
-            <div class="skins" id="skins" role="group" aria-label="Skin"></div>
           </div>
-          <button type="button" class="dice" id="dice" aria-label="Random look">⚄</button>
+          <div class="tones">
+            <div class="skins" id="skins" role="group" aria-label="Skin"></div>
+            <button type="button" class="dice" id="dice" aria-label="Random look">⚄</button>
+          </div>
+        </div>
+        <div class="actions">
+          <span></span>
+          <button type="submit" class="btn" id="send"><span class="k">[</span> <span class="label" id="sendLabel" data-i18n="send"></span> ↵ <span class="k">]</span></button>
         </div>
       </div>
+
       <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off">
       <p class="err" id="err" dir="auto" hidden></p>
-      <div class="actions">
-        <span class="count" id="count">0/1000</span>
-        <button type="submit" class="btn" id="send"><span class="k">[</span> <span class="label" id="sendLabel" data-i18n="send"></span> ↵ <span class="k">]</span></button>
-      </div>
     </form>
     <div class="done" id="done" hidden>
       <p class="ok" dir="auto" data-i18n="sent"></p>
@@ -374,7 +420,8 @@
 
   /* ───────── Translations ───────── */
   const I18N = {
-    en: { badname: "That name isn't allowed. Try another.", full: 'My inbox is full for today. Come back tomorrow.', closed: 'Not taking messages right now. Check back later.',
+    en: { q_name: "what's your name?", q_msg: "hi {name}. what's on your mind?", q_contact: "how can I reach you? (optional)", q_look: "last thing: pick your look", skip: "skip",
+      badname: "That name isn't allowed. Try another.", full: 'My inbox is full for today. Come back tomorrow.', closed: 'Not taking messages right now. Check back later.',
       cooldown: 'You can send another in {t}.', daily: "That's plenty for today. Come back tomorrow.",
       _name: "English", leave: "leave me a message",
       hint: "only I can read what you write here", msg_ph: "type your message…",
@@ -382,7 +429,8 @@
       send: "send", sending: "transmitting…", sent: "✓ Message delivered. Thanks, I'll read it soon.", again: "write another",
       empty: "Write something first.", noname: "Tell me your name first.",
       error: "Couldn't send. Check your connection and try again.", tap: "tap the dark to seed life" },
-    "zh-Hans": { badname: '这个名字不行，换一个吧。', full: '今天的信箱满了，明天再来吧。', closed: '暂时不收留言，晚点再来看看。',
+    "zh-Hans": { q_name: "你叫什么名字？", q_msg: "{name}，你好。想说点什么？", q_contact: "怎么联系你？（选填）", q_look: "最后一步：选个形象", skip: "跳过",
+      badname: '这个名字不行，换一个吧。', full: '今天的信箱满了，明天再来吧。', closed: '暂时不收留言，晚点再来看看。',
       cooldown: '{t} 后可以再发一条。', daily: '今天已经够多啦，明天再来吧。',
       _name: "简体中文", leave: "给我留言吧",
       hint: "你写下的内容只有我能看到", msg_ph: "输入你的留言…",
@@ -390,7 +438,8 @@
       send: "发送", sending: "传输中…", sent: "✓ 留言已送达。谢谢，我会尽快看。", again: "再写一条",
       empty: "先写点什么吧。", noname: "请先留下你的名字。",
       error: "发送失败，请检查网络后重试。", tap: "点击暗处，播种生命" },
-    "zh-Hant": { badname: '這個名字不行，換一個吧。', full: '今天的信箱滿了，明天再來吧。', closed: '暫時不收留言，晚點再來看看。',
+    "zh-Hant": { q_name: "你叫什麼名字？", q_msg: "{name}，你好。想說點什麼？", q_contact: "怎麼聯絡你？（選填）", q_look: "最後一步：選個形象", skip: "跳過",
+      badname: '這個名字不行，換一個吧。', full: '今天的信箱滿了，明天再來吧。', closed: '暫時不收留言，晚點再來看看。',
       cooldown: '{t} 後可以再傳一則。', daily: '今天已經夠多囉，明天再來吧。',
       _name: "繁體中文", leave: "給我留言吧",
       hint: "你寫下的內容只有我看得到", msg_ph: "輸入你的留言…",
@@ -398,7 +447,8 @@
       send: "傳送", sending: "傳輸中…", sent: "✓ 留言已送達。謝謝，我會盡快看。", again: "再寫一則",
       empty: "先寫點什麼吧。", noname: "請先留下你的名字。",
       error: "傳送失敗，請檢查網路後再試。", tap: "點擊暗處，播種生命" },
-    es: { badname: 'Ese nombre no está permitido. Prueba otro.', full: 'Mi buzón está lleno por hoy. Vuelve mañana.', closed: 'Ahora mismo no recibo mensajes. Vuelve más tarde.',
+    es: { q_name: "¿cómo te llamas?", q_msg: "hola, {name}. ¿qué tienes en mente?", q_contact: "¿cómo te contacto? (opcional)", q_look: "por último: elige tu aspecto", skip: "omitir",
+      badname: 'Ese nombre no está permitido. Prueba otro.', full: 'Mi buzón está lleno por hoy. Vuelve mañana.', closed: 'Ahora mismo no recibo mensajes. Vuelve más tarde.',
       cooldown: 'Podrás enviar otro en {t}.', daily: 'Suficiente por hoy. Vuelve mañana.',
       _name: "Español", leave: "déjame un mensaje",
       hint: "solo yo puedo leer lo que escribas aquí", msg_ph: "escribe tu mensaje…",
@@ -406,7 +456,8 @@
       send: "enviar", sending: "transmitiendo…", sent: "✓ Mensaje entregado. Gracias, lo leeré pronto.", again: "escribir otro",
       empty: "Escribe algo primero.", noname: "Dime tu nombre primero.",
       error: "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.", tap: "toca la oscuridad para sembrar vida" },
-    hi: { badname: 'यह नाम नहीं चलेगा। कोई दूसरा नाम चुनें।', full: 'आज के लिए मेरा इनबॉक्स भर गया है। कल फिर आइए।', closed: 'अभी संदेश नहीं लिए जा रहे हैं। बाद में फिर देखें।',
+    hi: { q_name: "आपका नाम क्या है?", q_msg: "नमस्ते {name}। आप क्या कहना चाहते हैं?", q_contact: "मैं आपसे कैसे संपर्क करूँ? (वैकल्पिक)", q_look: "आख़िरी चीज़: अपना रूप चुनें", skip: "छोड़ें",
+      badname: 'यह नाम नहीं चलेगा। कोई दूसरा नाम चुनें।', full: 'आज के लिए मेरा इनबॉक्स भर गया है। कल फिर आइए।', closed: 'अभी संदेश नहीं लिए जा रहे हैं। बाद में फिर देखें।',
       cooldown: 'आप {t} बाद दूसरा संदेश भेज सकते हैं।', daily: 'आज के लिए इतना काफ़ी है। कल फिर आइए।',
       _name: "हिन्दी", leave: "मुझे एक संदेश छोड़ें",
       hint: "यह संदेश सिर्फ़ मुझे दिखेगा", msg_ph: "अपना संदेश लिखें…",
@@ -414,7 +465,8 @@
       send: "भेजें", sending: "भेजा जा रहा है…", sent: "✓ धन्यवाद! संदेश पहुँच गया।", again: "एक और लिखें",
       empty: "पहले कुछ लिखें।", noname: "पहले अपना नाम लिखें।",
       error: "भेजा नहीं जा सका। कनेक्शन जाँचें और फिर कोशिश करें।", tap: "जीवन बोने के लिए अँधेरे को छुएँ" },
-    ar: { badname: 'هذا الاسم غير مسموح. جرّب اسمًا آخر.', full: 'صندوقي ممتلئ لهذا اليوم. عُد غدًا.', closed: 'لا أستقبل رسائل حاليًا. عُد لاحقًا.',
+    ar: { q_name: "ما اسمك؟", q_msg: "أهلًا {name}. بماذا تفكر؟", q_contact: "كيف أتواصل معك؟ (اختياري)", q_look: "أخيرًا: اختر مظهرك", skip: "تخطٍّ",
+      badname: 'هذا الاسم غير مسموح. جرّب اسمًا آخر.', full: 'صندوقي ممتلئ لهذا اليوم. عُد غدًا.', closed: 'لا أستقبل رسائل حاليًا. عُد لاحقًا.',
       cooldown: 'يمكنك إرسال رسالة أخرى بعد {t}.', daily: 'يكفي هذا لليوم. عُد غدًا.',
       _name: "العربية", leave: "اترك لي رسالة",
       hint: "لا أحد غيري يستطيع قراءة ما تكتبه هنا", msg_ph: "اكتب رسالتك…",
@@ -422,7 +474,8 @@
       send: "إرسال", sending: "جارٍ الإرسال…", sent: "✓ وصلت رسالتك. شكرًا، سأقرؤها قريبًا.", again: "اكتب رسالة أخرى",
       empty: "اكتب شيئًا أولًا.", noname: "اكتب اسمك أولًا.",
       error: "تعذّر الإرسال. تحقّق من اتصالك وحاول مجددًا.", tap: "المس الظلام لتزرع الحياة" },
-    bn: { badname: 'এই নামটা চলবে না। অন্য একটা দাও।', full: 'আজকের জন্য আমার ইনবক্স ভরে গেছে। কাল আবার এসো।', closed: 'এখন বার্তা নেওয়া হচ্ছে না। পরে আবার দেখো।',
+    bn: { q_name: "তোমার নাম কী?", q_msg: "হাই {name}। কী বলতে চাও?", q_contact: "তোমার সাথে কীভাবে যোগাযোগ করব? (ঐচ্ছিক)", q_look: "শেষ ধাপ: তোমার চেহারা বেছে নাও", skip: "বাদ দাও",
+      badname: 'এই নামটা চলবে না। অন্য একটা দাও।', full: 'আজকের জন্য আমার ইনবক্স ভরে গেছে। কাল আবার এসো।', closed: 'এখন বার্তা নেওয়া হচ্ছে না। পরে আবার দেখো।',
       cooldown: '{t} পরে আরেকটা পাঠাতে পারবে।', daily: 'আজকের জন্য যথেষ্ট। কাল আবার এসো।',
       _name: "বাংলা", leave: "আমাকে একটা বার্তা রেখে যাও",
       hint: "এখানে যা লিখবে, শুধু আমি পড়তে পারব", msg_ph: "তোমার বার্তা লেখো…",
@@ -430,7 +483,8 @@
       send: "পাঠাও", sending: "পাঠানো হচ্ছে…", sent: "✓ বার্তা পৌঁছেছে। ধন্যবাদ, শিগগিরই পড়ব।", again: "আরেকটা লেখো",
       empty: "আগে কিছু লেখো।", noname: "আগে তোমার নাম লেখো।",
       error: "পাঠানো যায়নি। সংযোগ দেখে আবার চেষ্টা করো।", tap: "অন্ধকারে ছুঁয়ে জীবন বোনো" },
-    pt: { badname: 'Esse nome não é permitido. Tente outro.', full: 'Minha caixa de entrada está cheia por hoje. Volte amanhã.', closed: 'Não estou recebendo mensagens agora. Volte mais tarde.',
+    pt: { q_name: "qual é o seu nome?", q_msg: "oi, {name}. o que você quer dizer?", q_contact: "como posso falar com você? (opcional)", q_look: "por último: escolha seu visual", skip: "pular",
+      badname: 'Esse nome não é permitido. Tente outro.', full: 'Minha caixa de entrada está cheia por hoje. Volte amanhã.', closed: 'Não estou recebendo mensagens agora. Volte mais tarde.',
       cooldown: 'Você pode enviar outra em {t}.', daily: 'Já chega por hoje. Volte amanhã.',
       _name: "Português", leave: "deixe uma mensagem",
       hint: "só eu posso ler o que você escrever aqui", msg_ph: "digite sua mensagem…",
@@ -438,7 +492,8 @@
       send: "enviar", sending: "transmitindo…", sent: "✓ Mensagem entregue. Obrigado, vou ler em breve.", again: "escrever outra",
       empty: "Escreva algo primeiro.", noname: "Diga seu nome primeiro.",
       error: "Não foi possível enviar. Verifique sua conexão e tente de novo.", tap: "toque no escuro para semear vida" },
-    ru: { badname: 'Это имя нельзя использовать. Выберите другое.', full: 'На сегодня мой ящик полон. Возвращайтесь завтра.', closed: 'Сейчас сообщения не принимаются. Загляните позже.',
+    ru: { q_name: "как вас зовут?", q_msg: "привет, {name}. что хотите сказать?", q_contact: "как с вами связаться? (необязательно)", q_look: "последнее: выберите облик", skip: "пропустить",
+      badname: 'Это имя нельзя использовать. Выберите другое.', full: 'На сегодня мой ящик полон. Возвращайтесь завтра.', closed: 'Сейчас сообщения не принимаются. Загляните позже.',
       cooldown: 'Следующее сообщение можно отправить через {t}.', daily: 'На сегодня достаточно. Возвращайтесь завтра.',
       _name: "Русский", leave: "оставьте мне сообщение",
       hint: "то, что вы здесь напишете, увижу только я", msg_ph: "введите сообщение…",
@@ -446,7 +501,8 @@
       send: "отправить", sending: "передача…", sent: "✓ Сообщение доставлено. Спасибо, скоро прочитаю.", again: "написать ещё",
       empty: "Сначала напишите что-нибудь.", noname: "Сначала укажите имя.",
       error: "Не удалось отправить. Проверьте подключение и попробуйте снова.", tap: "коснитесь тьмы, чтобы посеять жизнь" },
-    ja: { badname: 'その名前は使えません。別の名前にしてください。', full: '今日の受信箱はいっぱいです。また明日どうぞ。', closed: '現在メッセージを受け付けていません。また後で来てね。',
+    ja: { q_name: "名前は？", q_msg: "やあ、{name}。何を伝えたい？", q_contact: "連絡先は？（任意）", q_look: "最後に：見た目を選んでね", skip: "スキップ",
+      badname: 'その名前は使えません。別の名前にしてください。', full: '今日の受信箱はいっぱいです。また明日どうぞ。', closed: '現在メッセージを受け付けていません。また後で来てね。',
       cooldown: '{t}後にまた送信できます。', daily: '今日はここまで。また明日どうぞ。',
       _name: "日本語", leave: "メッセージを残してね",
       hint: "ここに書いた内容は、私だけが読めます", msg_ph: "メッセージを入力…",
@@ -454,7 +510,8 @@
       send: "送信", sending: "送信中…", sent: "✓ メッセージが届きました。ありがとう、すぐに読みます。", again: "もう一通書く",
       empty: "まず何か書いてください。", noname: "まず名前を入力してください。",
       error: "送信できませんでした。接続を確認して、もう一度お試しください。", tap: "暗闇をタップして生命を蒔こう" },
-    ko: { badname: '그 이름은 쓸 수 없어요. 다른 이름을 써 주세요.', full: '오늘은 메시지함이 가득 찼어요. 내일 다시 와 주세요.', closed: '지금은 메시지를 받지 않아요. 나중에 다시 와 주세요.',
+    ko: { q_name: "이름이 뭐예요?", q_msg: "안녕하세요, {name}님. 어떤 이야기를 남길까요?", q_contact: "어떻게 연락드릴까요? (선택)", q_look: "마지막으로: 캐릭터를 골라 주세요", skip: "건너뛰기",
+      badname: '그 이름은 쓸 수 없어요. 다른 이름을 써 주세요.', full: '오늘은 메시지함이 가득 찼어요. 내일 다시 와 주세요.', closed: '지금은 메시지를 받지 않아요. 나중에 다시 와 주세요.',
       cooldown: '{t} 후에 다시 보낼 수 있어요.', daily: '오늘은 여기까지예요. 내일 다시 와 주세요.',
       _name: "한국어", leave: "메시지를 남겨 주세요",
       hint: "여기에 쓴 내용은 저만 볼 수 있어요", msg_ph: "메시지를 입력하세요…",
@@ -462,7 +519,8 @@
       send: "보내기", sending: "전송 중…", sent: "✓ 메시지가 전달됐어요. 고마워요, 곧 읽을게요.", again: "하나 더 쓰기",
       empty: "먼저 내용을 입력해 주세요.", noname: "먼저 이름을 입력해 주세요.",
       error: "전송하지 못했어요. 연결을 확인하고 다시 시도해 주세요.", tap: "어둠을 터치해 생명을 심어 보세요" },
-    de: { badname: 'Dieser Name ist nicht erlaubt. Versuch einen anderen.', full: 'Mein Postfach ist für heute voll. Komm morgen wieder.', closed: 'Gerade keine Nachrichten möglich. Schau später wieder vorbei.',
+    de: { q_name: "wie heißt du?", q_msg: "hi {name}. was möchtest du sagen?", q_contact: "wie erreiche ich dich? (optional)", q_look: "zum Schluss: wähl dein Aussehen", skip: "überspringen",
+      badname: 'Dieser Name ist nicht erlaubt. Versuch einen anderen.', full: 'Mein Postfach ist für heute voll. Komm morgen wieder.', closed: 'Gerade keine Nachrichten möglich. Schau später wieder vorbei.',
       cooldown: 'Du kannst in {t} wieder eine senden.', daily: 'Genug für heute. Komm morgen wieder.',
       _name: "Deutsch", leave: "hinterlass mir eine Nachricht",
       hint: "was du hier schreibst, kann nur ich lesen", msg_ph: "Nachricht eingeben…",
@@ -470,7 +528,8 @@
       send: "senden", sending: "wird übertragen…", sent: "✓ Nachricht angekommen. Danke, ich lese sie bald.", again: "noch eine schreiben",
       empty: "Schreib zuerst etwas.", noname: "Sag mir zuerst deinen Namen.",
       error: "Senden fehlgeschlagen. Prüf deine Verbindung und versuch es erneut.", tap: "tippe ins Dunkel, um Leben zu säen" },
-    fr: { badname: "Ce nom n'est pas autorisé. Essaie un autre.", full: "Ma boîte est pleine pour aujourd'hui. Reviens demain.", closed: 'Je ne reçois pas de messages pour le moment. Reviens plus tard.',
+    fr: { q_name: "comment tu t'appelles ?", q_msg: "salut {name}. qu'est-ce que tu veux dire ?", q_contact: "comment te recontacter ? (facultatif)", q_look: "dernière étape : choisis ton look", skip: "passer",
+      badname: "Ce nom n'est pas autorisé. Essaie un autre.", full: "Ma boîte est pleine pour aujourd'hui. Reviens demain.", closed: 'Je ne reçois pas de messages pour le moment. Reviens plus tard.',
       cooldown: 'Tu pourras en envoyer un autre dans {t}.', daily: "C'est assez pour aujourd'hui. Reviens demain.",
       _name: "Français", leave: "laisse-moi un message",
       hint: "personne d'autre que moi ne pourra lire ce que tu écris ici", msg_ph: "écris ton message…",
@@ -478,7 +537,8 @@
       send: "envoyer", sending: "transmission…", sent: "✓ Message reçu. Merci, je le lirai bientôt.", again: "en écrire un autre",
       empty: "Écris quelque chose d'abord.", noname: "Dis-moi d'abord ton nom.",
       error: "Échec de l'envoi. Vérifie ta connexion et réessaie.", tap: "touche l'obscurité pour semer la vie" },
-    id: { badname: 'Nama itu tidak diizinkan. Coba yang lain.', full: 'Kotak masukku penuh untuk hari ini. Datang lagi besok.', closed: 'Sedang tidak menerima pesan. Coba lagi nanti.',
+    id: { q_name: "siapa namamu?", q_msg: "hai {name}. apa yang ingin kamu sampaikan?", q_contact: "bagaimana aku bisa menghubungimu? (opsional)", q_look: "terakhir: pilih tampilanmu", skip: "lewati",
+      badname: 'Nama itu tidak diizinkan. Coba yang lain.', full: 'Kotak masukku penuh untuk hari ini. Datang lagi besok.', closed: 'Sedang tidak menerima pesan. Coba lagi nanti.',
       cooldown: 'Kamu bisa mengirim lagi dalam {t}.', daily: 'Cukup untuk hari ini. Datang lagi besok.',
       _name: "Bahasa Indonesia", leave: "tinggalkan pesan untukku",
       hint: "hanya aku yang bisa membaca apa yang kamu tulis di sini", msg_ph: "tulis pesanmu…",
@@ -486,7 +546,8 @@
       send: "kirim", sending: "mengirim…", sent: "✓ Pesan terkirim. Terima kasih, akan segera kubaca.", again: "tulis lagi",
       empty: "Tulis sesuatu dulu.", noname: "Tulis namamu dulu.",
       error: "Gagal mengirim. Periksa koneksimu dan coba lagi.", tap: "ketuk kegelapan untuk menabur kehidupan" },
-    tr: { badname: 'Bu isme izin verilmiyor. Başka bir tane dene.', full: 'Bugünlük gelen kutum dolu. Yarın tekrar gel.', closed: 'Şu an mesaj almıyorum. Sonra tekrar uğra.',
+    tr: { q_name: "adın ne?", q_msg: "selam {name}. aklında ne var?", q_contact: "sana nasıl ulaşabilirim? (isteğe bağlı)", q_look: "son olarak: görünümünü seç", skip: "atla",
+      badname: 'Bu isme izin verilmiyor. Başka bir tane dene.', full: 'Bugünlük gelen kutum dolu. Yarın tekrar gel.', closed: 'Şu an mesaj almıyorum. Sonra tekrar uğra.',
       cooldown: '{t} sonra tekrar gönderebilirsin.', daily: 'Bugünlük bu kadar yeter. Yarın tekrar gel.',
       _name: "Türkçe", leave: "bana bir mesaj bırak",
       hint: "buraya yazdıklarını yalnızca ben okuyabilirim", msg_ph: "mesajını yaz…",
@@ -494,7 +555,8 @@
       send: "gönder", sending: "iletiliyor…", sent: "✓ Mesaj ulaştı. Teşekkürler, yakında okuyacağım.", again: "bir tane daha yaz",
       empty: "Önce bir şey yaz.", noname: "Önce adını yaz.",
       error: "Gönderilemedi. Bağlantını kontrol edip tekrar dene.", tap: "hayat ekmek için karanlığa dokun" },
-    vi: { badname: 'Tên này không được phép. Hãy chọn tên khác.', full: 'Hộp thư hôm nay đã đầy. Mai quay lại nhé.', closed: 'Hiện chưa nhận tin nhắn. Quay lại sau nhé.',
+    vi: { q_name: "bạn tên gì?", q_msg: "chào {name}. bạn muốn nói gì?", q_contact: "mình liên lạc với bạn bằng cách nào? (không bắt buộc)", q_look: "bước cuối: chọn ngoại hình", skip: "bỏ qua",
+      badname: 'Tên này không được phép. Hãy chọn tên khác.', full: 'Hộp thư hôm nay đã đầy. Mai quay lại nhé.', closed: 'Hiện chưa nhận tin nhắn. Quay lại sau nhé.',
       cooldown: 'Bạn có thể gửi tiếp sau {t}.', daily: 'Hôm nay vậy là đủ rồi. Mai quay lại nhé.',
       _name: "Tiếng Việt", leave: "để lại lời nhắn cho tôi nhé",
       hint: "chỉ mình tôi đọc được những gì bạn viết ở đây", msg_ph: "nhập tin nhắn…",
@@ -1211,6 +1273,7 @@
     townEl.classList.remove("ghosted");
     life.start(!reduced);
     Town.start();
+    setTimeout(() => Term.begin(), reduced ? 0 : 450);
   }
 
   async function intro() {
@@ -1257,7 +1320,7 @@
   applyLang();
   intro();
 
-  /* ───────── Message form ───────── */
+  /* ───────── Message form: a terminal that asks one thing at a time ───────── */
   const form = document.getElementById("msg-form");
   const done = document.getElementById("done");
   const msg = document.getElementById("message");
@@ -1268,8 +1331,10 @@
   const sendLabel = document.getElementById("sendLabel");
   const errEl = document.getElementById("err");
 
-  function grow() { msg.style.height = "auto"; msg.style.height = Math.max(104, msg.scrollHeight + 2) + "px"; }
+  function grow() { msg.style.height = "auto"; msg.style.height = Math.max(38, msg.scrollHeight + 2) + "px"; }
   function showErr(key, field) {
+    const host = field ? field.closest(".step") : document.getElementById("st-look");
+    host.appendChild(errEl);
     errEl.textContent = t(key); errEl.hidden = false;
     if (field) { field.classList.add("bad"); field.focus(); }
     Sound.error();
@@ -1277,7 +1342,89 @@
   function clearErr() { errEl.hidden = true; [msg, sender].forEach(f => f.classList.remove("bad")); }
   msg.addEventListener("input", () => { countEl.textContent = msg.value.length + "/1000"; grow(); clearErr(); });
   sender.addEventListener("input", clearErr);
-  msg.addEventListener("keydown", e => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) form.requestSubmit(); });
+
+  const Term = (() => {
+    const steps = [
+      { el: document.getElementById("st-name"),    input: sender,  key: "q_name",    need: "noname" },
+      { el: document.getElementById("st-msg"),     input: msg,     key: "q_msg",     need: "empty" },
+      { el: document.getElementById("st-contact"), input: contact, key: "q_contact" },
+      { el: document.getElementById("st-look"),                    key: "q_look",    last: true }
+    ];
+    steps.forEach(st => { st.qt = st.el.querySelector(".qt"); st.past = st.el.querySelector(".past"); });
+    let active = -1, reached = -1, typingToken = 0;
+
+    const question = (st) => t(st.key).replace("{name}", sender.value.trim());
+
+    async function typeQuestion(st) {
+      const token = ++typingToken, chars = Array.from(question(st));
+      st.typed = true;
+      for (let i = 1; i <= chars.length; i++) {
+        if (token !== typingToken) return;
+        st.qt.textContent = chars.slice(0, i).join("");
+        if (!reduced && chars[i - 1] !== " ") Sound.key(0.35);
+        if (!reduced) await new Promise(r => setTimeout(r, 22 + Math.random() * 22));
+      }
+    }
+
+    function render() {
+      steps.forEach((st, j) => {
+        st.el.hidden = j > reached;
+        st.el.classList.toggle("active", j === active);
+        if (st.past) {
+          const v = st.input.value.trim().split("\n")[0];
+          st.past.textContent = v || "—";
+        }
+        if (st.typed && j !== active) st.qt.textContent = question(st);   // keeps "hi {name}" current
+      });
+    }
+
+    function show(i, { focus = true } = {}) {
+      active = i; reached = Math.max(reached, i);
+      clearErr();
+      render();
+      const st = steps[i];
+      if (!st.typed) typeQuestion(st); else st.qt.textContent = question(st);
+      if (st.input && focus) st.input.focus({ preventScroll: true });     // same tap → keyboard stays open
+      if (st.last && document.activeElement && document.activeElement.blur) document.activeElement.blur();
+      if (focus) setTimeout(() => st.el.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" }), 60);
+    }
+
+    function next() {
+      const st = steps[active];
+      if (!st || st.last) return;
+      if (st.need && !st.input.value.trim()) return showErr(st.need, st.input);
+      st.done = true;
+      Sound.key();
+      if (active === 0) steps[1].typed = steps[1].typed && steps[1].done;   // re-greet if the name changed before the message
+      let n = steps.findIndex((x, j) => j > active && !x.done && !x.last);
+      if (n < 0) n = steps.length - 1;
+      show(n);
+    }
+
+    steps.forEach((st, j) => {
+      if (st.past) st.past.addEventListener("click", () => show(j));
+      st.el.querySelectorAll(".go").forEach(b => b.addEventListener("click", next));
+      if (st.input) st.input.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter" || e.isComposing || e.keyCode === 229) return;   // let IME (CJK) typing finish
+        if (st.input === msg && e.shiftKey) return;                            // shift+enter = new line
+        e.preventDefault();
+        next();
+      });
+    });
+    document.getElementById("skip").addEventListener("click", () => { contact.value = ""; next(); });
+
+    return {
+      begin() { if (active < 0) show(0, { focus: false }); },
+      relabel() { typingToken++; steps.forEach(st => { if (st.typed) st.qt.textContent = question(st); }); },
+      goTo(i) { show(i); },
+      again() {                                   // keep name, contact and look; ask for a new message
+        msg.value = ""; countEl.textContent = "0/1000"; grow();
+        steps[1].done = false; steps[1].typed = false;
+        show(1);
+      }
+    };
+  })();
+  sel.addEventListener("change", () => Term.relabel());
 
   /* ───────── Character creator ───────── */
   const look = (() => {
@@ -1339,14 +1486,16 @@
   }
   const fmt = (ms) => { const s = Math.max(0, Math.ceil(ms / 1000)); return Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0"); };
   let serverBlock = null;                    // "full" or "closed", reported by your Google Sheet
+  let sending = false;
   function tick() {
     if (serverBlock) {
-      sendBtn.disabled = againBtn.disabled = true;
+      form.hidden = true; done.hidden = true;
       waitEl.hidden = false; waitEl.textContent = t(serverBlock);
       return;
     }
     const l = limit();
-    sendBtn.disabled = againBtn.disabled = !!l;
+    sendBtn.disabled = !!l || sending;
+    againBtn.disabled = !!l;
     if (!l) { waitEl.hidden = true; return; }
     waitEl.hidden = false;
     if (l.kind === "daily") waitEl.textContent = t("daily");
@@ -1369,11 +1518,12 @@
     e.preventDefault();
     clearErr();
     const text = msg.value.trim(), who = sender.value.trim(), reach = contact.value.trim();
-    if (!text) return showErr("empty", msg);
-    if (!who) return showErr("noname", sender);
+    if (!who) { Term.goTo(0); return showErr("noname", sender); }
+    if (!text) { Term.goTo(1); return showErr("empty", msg); }
     if (form.botcheck.checked) return;
     if (limit()) { tick(); Sound.error(); return; }
 
+    sending = true;
     sendBtn.disabled = true;
     sendLabel.dataset.i18n = "sending"; sendLabel.textContent = t("sending");
     Sound.transmit();
@@ -1387,7 +1537,7 @@
       });
       const data = await res.json();
       if (!data.ok) {
-        if (data.reason === "name") return showErr("badname", sender);
+        if (data.reason === "name") { Term.goTo(0); return showErr("badname", sender); }
         if (data.reason === "cap" || data.reason === "closed") {
           serverBlock = data.reason === "cap" ? "full" : "closed";
           Sound.error();
@@ -1395,8 +1545,6 @@
         }
         throw new Error(data.reason);
       }
-      form.reset(); countEl.textContent = "0/1000"; grow();
-      box.style.minHeight = box.offsetHeight + "px";   // keep the layout from jumping
       form.hidden = true; done.hidden = false;
       logSend();
       Sound.success();
@@ -1404,13 +1552,15 @@
     } catch {
       showErr("error");
     } finally {
+      sending = false;
       sendLabel.dataset.i18n = "send"; sendLabel.textContent = t("send");
       tick();
     }
   });
 
   againBtn.addEventListener("click", () => {
-    done.hidden = true; form.hidden = false; box.style.minHeight = ""; msg.focus();
+    done.hidden = true; form.hidden = false;
+    Term.again();
   });
 </script>
 </body>
