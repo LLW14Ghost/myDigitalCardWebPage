@@ -42,7 +42,7 @@
   #life {
     position: fixed; inset: 0; width: 100%; height: 100%; display: block;
     touch-action: none;
-    opacity: 0; transition: opacity 2.2s ease;
+    opacity: 0; transition: opacity .3s ease;
   }
   #life.on { opacity: 1; }
   .vignette {
@@ -244,6 +244,34 @@
   .sk[aria-pressed="true"] { box-shadow: 0 0 0 2px #000, 0 0 0 3px var(--spore); }
   .sk:focus-visible { outline: 1px solid var(--spore); outline-offset: 3px; }
 
+  /* ── the spore: one living cell waiting to be touched ── */
+  .spore {
+    position: fixed; left: 50%; top: 50%; z-index: 3;
+    width: 44px; height: 44px; margin: -22px 0 0 -22px;   /* generous tap area */
+    display: grid; place-items: center;
+    background: none; border: 0; padding: 0; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .spore::before {
+    content: ""; width: 9px; height: 9px;
+    background: var(--spore);
+    box-shadow: 0 0 10px rgba(159,224,168,.7), 0 0 26px rgba(159,224,168,.35);
+    animation: heartbeat 1.6s ease-in-out infinite;
+  }
+  .spore:focus-visible { outline: 1px solid rgba(159,224,168,.5); outline-offset: 4px; }
+  .spore.burst { pointer-events: none; }
+  .spore.burst::before { animation: pop .45s ease-out forwards; }
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); opacity: .85; }
+    14% { transform: scale(1.35); opacity: 1; }
+    28% { transform: scale(1); opacity: .85; }
+    42% { transform: scale(1.22); opacity: 1; }
+    60% { transform: scale(1); opacity: .8; }
+  }
+  @keyframes pop {
+    0% { transform: scale(1.4); opacity: 1; }
+    100% { transform: scale(5); opacity: 0; box-shadow: 0 0 40px rgba(159,224,168,0); }
+  }
   @keyframes blink { 50% { opacity: 0 } }
   @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
 </style>
@@ -266,8 +294,10 @@
   <label class="lang"><select id="lang" aria-label="Language"></select></label>
 </div>
 
+<button type="button" class="spore" id="spore" aria-label="Ghost14"></button>
+
 <main class="stage">
-  <h1 class="name" id="nameLine" aria-label="Ghost14">
+  <h1 class="name ghosted" id="nameLine" aria-label="Ghost14">
     <span class="tri" aria-hidden="true">▸</span>
     <span class="typed" id="typed" aria-hidden="true"></span>
   </h1>
@@ -574,19 +604,22 @@
       if (!enabled) return;
       if (!ctx && !init()) return;
       ctx.resume().then(() => {
+        if (!enabled) return;
         master.gain.cancelScheduledValues(ctx.currentTime);
         master.gain.setTargetAtTime(1.5, ctx.currentTime, 0.25);
         startHum();
         started = true;
-      });
+        btn.setAttribute("aria-pressed", "true");
+      }).catch(() => {});
     }
 
     function setEnabled(on) {
       enabled = on;
       store.set("g14-sound", on ? "on" : "off");
-      btn.setAttribute("aria-pressed", String(on));
-      if (on) unlock();
-      else if (ctx) {
+      if (on) { unlock(); return; }          // the button lights up once sound is really playing
+      btn.setAttribute("aria-pressed", "false");
+      started = false;                       // next "on" fades sound back in
+      if (ctx) {
         master.gain.setTargetAtTime(0, ctx.currentTime, 0.08);
         setTimeout(() => { if (!enabled) ctx.suspend(); }, 400);
       }
@@ -614,9 +647,10 @@
     const hz = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
 
     return {
-      unlock, get started() { return started; },
-      toggle() { setEnabled(!enabled); },
-      init() { btn.setAttribute("aria-pressed", String(enabled)); },
+      unlock, get started() { return started; }, get enabled() { return enabled; },
+      // if the browser is still blocking sound, a tap on the button turns it on rather than off
+      toggle() { if (enabled && !started) unlock(); else setEnabled(!enabled); },
+      init() { btn.setAttribute("aria-pressed", "false"); },
       pause() { if (ctx && ctx.state === "running") ctx.suspend(); },
       resume() { if (ctx && enabled && started) ctx.resume(); },
 
@@ -663,6 +697,12 @@
         const t = ctx.currentTime;
         for (let k = 0; k < 8; k++) blip(650 + Math.random() * 1700, "square", t + k * 0.045, 0.035, 0.022);
       },
+      bloom() {                              // the spore bursts
+        if (!live()) return;
+        const t = ctx.currentTime;
+        [0, 3, 7, 10, 12, 15].forEach((st, i) => blip(hz(69 + st), "sine", t + i * 0.075, 1.8, 0.045, { attack: 0.01, send: 0.7 }));
+        for (let k = 0; k < 5; k++) blip(1400 + Math.random() * 1800, "sine", t + 0.05 + Math.random() * 0.4, 0.08, 0.025, { send: 0.5 });
+      },
       success() {
         if (!live()) return;
         const t = ctx.currentTime;
@@ -681,7 +721,7 @@
   Sound.init();
   document.getElementById("snd").addEventListener("click", (e) => { e.stopPropagation(); Sound.toggle(); });
   // Phones only allow audio after a tap, so the first tap anywhere turns it on.
-  ["pointerup", "keydown"].forEach(ev => addEventListener(ev, (e) => {
+  ["pointerup", "touchend", "click", "keydown"].forEach(ev => addEventListener(ev, (e) => {
     if (e.target.closest && e.target.closest("#snd")) return;
     if (!Sound.started) Sound.unlock();
   }));
@@ -728,7 +768,7 @@
       }
       [grid, next] = [next, grid];
       quiet = changed < grid.length * 0.004 ? quiet + 1 : 0;
-      if (alive < grid.length * 0.02 || quiet > 25) { seed(0.06); quiet = 0; }
+      if (!blooming && (alive < grid.length * 0.02 || quiet > 25)) { seed(0.06); quiet = 0; }
       return { births, pick };
     }
     function draw() {
@@ -739,7 +779,22 @@
         ctx.fillRect((i % cols) * CELL + 1, Math.floor(i / cols) * CELL + 1, CELL - 2, CELL - 2);
       }
     }
+    // spores spreading out from where the visitor touched
+    let blooming = null, lastFrame = 0;
+    function spread(ts) {
+      const dt = Math.min(0.05, lastFrame ? (ts - lastFrame) / 1000 : 0); lastFrame = ts;
+      if (!blooming) return;
+      const b = blooming, from = b.rad;
+      b.rad += dt * b.speed;
+      for (let y = 0; y < rows; y++) for (let x = 0; x < cols; x++) {
+        const d = Math.hypot(x - b.c, y - b.r);
+        if (d >= from && d < b.rad && Math.random() < 0.34 - 0.18 * (d / b.max)) { const i = y * cols + x; grid[i] = 1; age[i] = 0; }
+      }
+      draw();
+      if (b.rad > b.max) blooming = null;
+    }
     function loop(ts) {
+      spread(ts);
       if (!document.hidden && ts - last > STEP_MS) {
         const { births, pick } = step(); draw(); last = ts;
         if (++gen % 3 === 0 && pick >= 0 && Math.random() < Math.min(1, births / 30)) {
@@ -749,7 +804,7 @@
       requestAnimationFrame(loop);
     }
     resize();
-    for (let i = 0; i < 30; i++) step();
+    const reducedLife = matchMedia("(prefers-reduced-motion: reduce)").matches;
     draw();
     addEventListener("resize", () => { resize(); draw(); });
     canvas.addEventListener("pointerdown", e => { burst(e.clientX, e.clientY); Sound.pop(); });
@@ -758,6 +813,16 @@
       start(animate) {
         canvas.classList.add("on");
         if (animate && !running) { running = true; requestAnimationFrame(loop); }
+      },
+      bloom(px, py) {
+        grid.fill(0); age.fill(0);
+        const c = Math.floor(px / CELL), r = Math.floor(py / CELL);
+        for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++)
+          if (Math.random() < 0.6) { const i = ((r + dy + rows) % rows) * cols + (c + dx + cols) % cols; grid[i] = 1; }
+        const max = Math.hypot(Math.max(c, cols - c), Math.max(r, rows - r));
+        if (reducedLife) { blooming = { c, r, rad: 3, speed: max / 1.5, max }; lastFrame = 0; for (let i = 1; i <= 40; i++) spread(i * 50); blooming = null; }
+        else blooming = { c, r, rad: 3, speed: max / 1.5, max };
+        draw();
       }
     };
   })();
@@ -1026,7 +1091,8 @@
 
       if (focus && ts < focusUntil) {
         bubble.hidden = false;
-        bubble.style.left = (Math.round(focus.x) + 6) * unit + "px";
+        const half = bubble.offsetWidth / 2 + 4, cw = wrap.clientWidth;
+        bubble.style.left = Math.max(half, Math.min(cw - half, (Math.round(focus.x) + 6) * unit)) + "px";
         bubble.style.top = CANVAS_TOP + (focus.feet - 17) * unit + "px";
       } else if (!bubble.hidden) { bubble.hidden = true; focus = null; }
 
@@ -1093,7 +1159,7 @@
   async function typeName() {
     const word = document.createElement("span");
     typed.append(word, cursor);
-    await wait(1300);
+    await wait(650);
     const chars = "Ghost";
     for (let i = 1; i <= chars.length; i++) {
       word.textContent = chars.slice(0, i);
@@ -1148,6 +1214,11 @@
   }
 
   async function intro() {
+    const at = await waitForSpore();
+    life.bloom(at.x, at.y);
+    life.start(!reduced);
+    setTimeout(() => Sound.bloom(), 140);    // give the browser a moment to wake the audio
+    nameLine.classList.remove("ghosted");
     await typeName();
     await wait(650);
     await moveUp();
@@ -1157,9 +1228,31 @@
     reveal();
   }
 
+  // tapping during the intro jumps to the end — armed once the spore has been touched
   const skip = () => { skipping = true; };
-  addEventListener("pointerdown", skip, { once: true });
-  addEventListener("keydown", skip, { once: true });
+  function armSkip() {
+    addEventListener("pointerdown", skip, { once: true });
+    addEventListener("keydown", skip, { once: true });
+  }
+
+  // The page waits on a single pulsing spore. Touching it is the visitor's first tap,
+  // which is also what lets the browser play sound — so the whole intro has audio.
+  function waitForSpore() {
+    const spore = document.getElementById("spore");
+    return new Promise(resolve => {
+      const evs = ["pointerup", "touchend", "click", "keydown"];
+      const go = () => {
+        evs.forEach(ev => removeEventListener(ev, go, true));
+        Sound.unlock();
+        const r = spore.getBoundingClientRect();
+        spore.classList.add("burst");
+        setTimeout(() => spore.remove(), 500);
+        setTimeout(armSkip, 60);
+        resolve({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+      };
+      evs.forEach(ev => addEventListener(ev, go, true));
+    });
+  }
 
   applyLang();
   intro();
