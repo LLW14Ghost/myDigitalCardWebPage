@@ -47,7 +47,7 @@
   #life.on { opacity: 1; }
   .vignette {
     position: fixed; inset: 0; pointer-events: none;
-    background: radial-gradient(70% 55% at 50% 50%, rgba(0,0,0,.82), rgba(0,0,0,.3) 70%, rgba(0,0,0,.1));
+    background: radial-gradient(75% 60% at 50% 48%, rgba(0,0,0,.9), rgba(0,0,0,.45) 65%, rgba(0,0,0,.12));
   }
 
   /* ── layout ── */
@@ -104,22 +104,28 @@
   .ask .tri { color: var(--spore); font-size: 11px; }
 
   /* ── message box ── */
+  .stage { text-shadow: 0 0 2px #000, 0 0 8px #000, 0 0 16px #000; }   /* text lifts off the Life grid */
   .box {
-    width: 100%; max-width: 420px;
-    background: var(--panel);
-    -webkit-backdrop-filter: blur(6px);
-    backdrop-filter: blur(6px);
-    border: 1px solid var(--line);
-    padding: 14px 14px 12px;
+    width: 100%; max-width: 440px;
     transition: opacity .6s ease, transform .6s cubic-bezier(.2,.8,.2,1);
   }
   .box.ghosted { transform: translateY(14px); }
   .comment { color: var(--dim); font-size: 12px; margin-bottom: 10px; }
-  .step + .step { margin-top: 14px; }
+  .comment { display: flex; justify-content: space-between; gap: 12px; }
+  .prog { color: var(--dim); font-size: 12px; flex: none; font-variant-numeric: tabular-nums; }
+  .steps { position: relative; }
+  .step.leaving { position: absolute; left: 0; right: 0; top: 0; pointer-events: none; animation: stepOut .28s ease forwards; }
+  .step.entering { animation: stepIn .34s cubic-bezier(.2,.8,.2,1); }
+  .step.leaving.rev { animation-name: stepOutRev; }
+  .step.entering.rev { animation-name: stepInRev; }
+  @keyframes stepOut    { to   { opacity: 0; transform: translateY(-16px); } }
+  @keyframes stepIn     { from { opacity: 0; transform: translateY(14px); } }
+  @keyframes stepOutRev { to   { opacity: 0; transform: translateY(16px); } }
+  @keyframes stepInRev  { from { opacity: 0; transform: translateY(-14px); } }
   .q { color: var(--muted); font-size: 14px; min-height: 1.6em; }
   .q .tri { color: var(--spore); font-size: 10px; margin-right: 2px; }
   .past {
-    display: block; max-width: 100%;
+    display: none !important; max-width: 100%;
     background: none; border: 0; padding: 3px 0 0; cursor: pointer;
     font: 15px/1.5 var(--mono); color: var(--text); text-align: start;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
@@ -127,36 +133,35 @@
   }
   .past::before { content: "> "; color: var(--dim); }
   .past:hover, .past:focus-visible { color: var(--spore); outline: none; }
-  .entry { display: flex; gap: 8px; align-items: flex-start; margin-top: 6px; }
-  .entry .p { color: var(--spore); flex: none; padding-top: 8px; }
+  .entry { position: relative; display: flex; gap: 1ch; align-items: flex-start; margin-top: 2px; font-size: 16px; line-height: 1.5; }
+  .entry .p { color: var(--spore); flex: none; }
+  .entry .cur { position: absolute; left: 2ch; top: .2em; height: 1.1em; width: .6em; background: var(--spore); display: none; pointer-events: none; animation: blink 1s steps(1) infinite; }
+  .entry.idle .cur { display: block; }
   .go {
-    flex: none; width: 42px; height: 38px;
-    background: rgba(0,0,0,.4); border: 1px solid var(--line); border-radius: 0;
-    color: var(--spore); font: 15px var(--mono); cursor: pointer; padding: 0;
+    flex: none; width: 40px; height: 32px; margin-top: -4px;
+    background: none; border: 0; padding: 0; cursor: pointer;
+    color: var(--dim); font: 18px var(--mono);
     -webkit-tap-highlight-color: transparent;
   }
-  .go:hover, .go:focus-visible { border-color: rgba(159,224,168,.5); outline: none; }
-  .go:active { transform: scale(.95); }
-  .cnt { text-align: right; color: var(--dim); font-size: 11px; margin-top: 4px; }
-  .under { display: flex; justify-content: flex-end; margin-top: 4px; }
+  .go:hover, .go:focus-visible { color: var(--spore); outline: none; }
+  .go:active { transform: scale(.9); }
+  .cnt { color: var(--dim); font-size: 11px; }
+  .under { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; min-height: 36px; }
+  .back { color: var(--muted); }
+  .back .label { color: var(--muted); }
   .btn.small { font-size: 13px; padding: 8px 2px; }
-  .step:not(.active) .entry, .step:not(.active) .cnt, .step:not(.active) .under,
-  .step:not(.active) .creator, .step:not(.active) .actions { display: none; }
-  .step.active .past { display: none; }
   textarea, input[type=text] {
     flex: 1; min-width: 0;
-    background: rgba(255,255,255,.025);
-    border: 1px solid var(--line); border-radius: 0;
+    background: transparent; border: 0; border-radius: 0; padding: 0; margin: 0;
     color: var(--text); caret-color: var(--spore);
     font: 16px/1.5 var(--mono); /* 16px stops iOS zoom */
-    padding: 6px 9px;
+    text-shadow: inherit;
     -webkit-appearance: none; appearance: none;
-    transition: border-color .2s;
   }
-  textarea { min-height: 38px; resize: none; overflow: hidden; }
-  ::placeholder { color: var(--dim); }
-  textarea:focus, input:focus { outline: none; border-color: rgba(159,224,168,.5); }
-  .bad { border-color: rgba(240,163,154,.6) !important; }
+  textarea { min-height: 1.5em; resize: none; overflow: hidden; display: block; }
+  ::placeholder { color: transparent; }
+  textarea:focus, input:focus { outline: none; }
+  .bad { color: var(--warn) !important; caret-color: var(--warn); }
 
   .actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 10px; }
   .count { color: var(--dim); font-size: 12px; }
@@ -182,32 +187,38 @@
   .top { top: max(14px, env(safe-area-inset-top)); display: flex; align-items: center; gap: 8px; }
   .top.left { left: 14px; }
   .top.right { right: 14px; }
+  .corner.top { text-shadow: 0 0 2px #000, 0 0 10px #000, 0 0 18px #000; }
   .gh {
-    font-size: 11px; color: var(--muted); text-decoration: none;
-    border: 1px solid var(--line); background: rgba(0,0,0,.6);
-    padding: 4px 8px; letter-spacing: .02em;
+    display: inline-block; padding: 8px 4px;
+    font: 500 14px var(--mono); color: var(--spore); text-decoration: none; letter-spacing: .02em;
+    text-shadow: 0 0 2px #000, 0 0 10px #000, 0 0 8px rgba(159,224,168,.45);
+    transition: text-shadow .2s, color .2s;
   }
-  .gh .arr { color: var(--spore); }
-  .gh:hover, .gh:focus-visible { color: var(--text); border-color: rgba(159,224,168,.5); outline: none; }
+  .gh .arr { color: var(--muted); font-size: 12px; }
+  .gh:hover, .gh:focus-visible { color: #c6f5cd; outline: none; text-shadow: 0 0 2px #000, 0 0 14px rgba(159,224,168,.8); }
   .lang { position: relative; display: flex; align-items: center; }
   .lang select {
     appearance: none; -webkit-appearance: none;
-    background: rgba(0,0,0,.6); border: 1px solid var(--line); border-radius: 0;
-    color: var(--muted); font: 11px var(--mono);
-    padding: 4px 20px 4px 8px; cursor: pointer;
+    background: transparent; border: 0; border-radius: 0;
+    color: var(--text); font: 14px var(--mono);
+    padding: 8px 18px 8px 4px; cursor: pointer;
+    text-shadow: 0 0 2px #000, 0 0 10px #000, 0 0 16px #000;
   }
-  .lang::after { content: "▾"; position: absolute; right: 7px; pointer-events: none; font-size: 9px; color: var(--muted); }
-  .lang select:focus { outline: none; border-color: rgba(159,224,168,.5); }
+  .lang::after { content: "▾"; position: absolute; right: 2px; pointer-events: none; font-size: 11px; color: var(--spore); }
+  .lang select:focus-visible { outline: 1px dashed rgba(159,224,168,.5); outline-offset: 2px; }
+  .lang select:hover { color: #fff; }
   .lang option { background: #000; color: var(--text); }
   .snd {
     display: grid; place-items: center;
-    width: 27px; height: 25px; padding: 0;
-    background: rgba(0,0,0,.6); border: 1px solid var(--line); border-radius: 0;
+    width: 44px; height: 40px; padding: 0;
+    background: none; border: 0; border-radius: 0;
     color: var(--muted); cursor: pointer;
+    filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 8px #000);
     -webkit-tap-highlight-color: transparent;
+    transition: color .2s, filter .2s;
   }
-  .snd:hover, .snd:focus-visible { color: var(--text); border-color: rgba(159,224,168,.5); outline: none; }
-  .snd[aria-pressed="true"] { color: var(--spore); }
+  .snd:hover, .snd:focus-visible { color: var(--text); outline: none; }
+  .snd[aria-pressed="true"] { color: var(--spore); filter: drop-shadow(0 0 2px #000) drop-shadow(0 0 7px rgba(159,224,168,.55)); }
   .snd .w { transition: opacity .2s; }
   .snd[aria-pressed="false"] .w { opacity: 0; }
   .snd[aria-pressed="true"] .x { opacity: 0; }
@@ -243,22 +254,22 @@
 
   /* ── character creator (sized for thumbs) ── */
   .creator {
-    display: grid; grid-template-columns: auto 1fr; gap: 12px 14px; align-items: center;
-    margin-top: 8px; padding: 12px;
-    border: 1px solid var(--line); background: rgba(255,255,255,.025);
+    display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; align-items: center;
+    margin-top: 10px; padding: 0 0 0 2ch;
   }
   #preview { width: 72px; height: 96px; image-rendering: pixelated; image-rendering: crisp-edges; }
   .picks { min-width: 0; display: flex; flex-direction: column; gap: 10px; }
   .pick { display: flex; align-items: center; gap: 6px; }
   .pick .pl { flex: 1; text-align: center; white-space: nowrap; font-size: 13px; color: var(--muted); }
   .arw, .dice {
-    background: rgba(0,0,0,.4); border: 1px solid var(--line); border-radius: 0;
+    background: none; border: 0; border-radius: 0;
     color: var(--spore); cursor: pointer; padding: 0; flex: none;
+    text-shadow: 0 0 2px #000, 0 0 8px rgba(159,224,168,.4);
     -webkit-tap-highlight-color: transparent;
   }
-  .arw { width: 44px; height: 40px; font-size: 12px; }
-  .dice { width: 44px; height: 40px; font-size: 20px; line-height: 1; }
-  .arw:hover, .dice:hover, .arw:focus-visible, .dice:focus-visible { border-color: rgba(159,224,168,.5); outline: none; }
+  .arw { width: 44px; height: 40px; font-size: 15px; }
+  .dice { width: 44px; height: 40px; font-size: 26px; line-height: 1; }
+  .arw:hover, .dice:hover, .arw:focus-visible, .dice:focus-visible { color: #c6f5cd; outline: none; }
   .arw:active, .dice:active { transform: scale(.94); }
   .tones { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .skins { display: flex; flex-wrap: wrap; gap: 7px; }
@@ -303,11 +314,11 @@
 <div class="vignette"></div>
 
 <div class="corner top left ghosted" id="topLeft">
-  <a class="gh" id="gh" href="#" target="_blank" rel="noopener me" hidden><span class="arr">↗</span> github</a>
+  <a class="gh" id="gh" href="#" target="_blank" rel="noopener me" hidden>.github<span class="arr"> ↗</span></a>
 </div>
 <div class="corner top right ghosted" id="topRight">
   <button type="button" class="snd" id="snd" aria-label="Sound" aria-pressed="false">
-    <svg width="15" height="13" viewBox="0 0 15 13" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
+    <svg width="26" height="23" viewBox="0 0 15 13" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true">
       <path d="M1 4.5h2.5L7 1.5v10L3.5 8.5H1z" fill="currentColor" stroke="none"/>
       <path class="w" d="M9.5 4.2a3 3 0 0 1 0 4.6M11.5 2.4a5.6 5.6 0 0 1 0 8.2"/>
       <path class="x" d="M9.5 4.5l4 4M13.5 4.5l-4 4"/>
@@ -331,13 +342,15 @@
 
   <section class="box later" id="box">
     <form id="msg-form" novalidate autocomplete="off">
-      <p class="comment" dir="auto"># <span data-i18n="hint"></span></p>
+      <p class="comment"><span dir="auto"># <span data-i18n="hint"></span></span><span class="prog" id="prog"></span></p>
 
+      <div class="steps" id="steps">
       <div class="step" id="st-name" hidden>
         <p class="q" dir="auto"><span class="tri">▸</span> <span class="qt"></span></p>
         <button type="button" class="past" dir="auto"></button>
         <div class="entry">
           <span class="p">&gt;</span>
+          <span class="cur" aria-hidden="true"></span>
           <input type="text" id="sender" name="sender" maxlength="60" dir="auto" data-i18n-ph="name_ph" autocomplete="nickname" enterkeyhint="next">
           <button type="button" class="go" aria-label="Next">↵</button>
         </div>
@@ -348,10 +361,11 @@
         <button type="button" class="past" dir="auto"></button>
         <div class="entry">
           <span class="p">&gt;</span>
+          <span class="cur" aria-hidden="true"></span>
           <textarea id="message" name="message" rows="1" maxlength="1000" dir="auto" data-i18n-ph="msg_ph" enterkeyhint="next"></textarea>
           <button type="button" class="go" aria-label="Next">↵</button>
         </div>
-        <p class="cnt"><span id="count">0/1000</span></p>
+        <div class="under"><button type="button" class="btn small back"><span class="k">[</span> ‹ <span class="label" data-i18n="back"></span> <span class="k">]</span></button><span class="cnt"><span id="count">0/1000</span></span></div>
       </div>
 
       <div class="step" id="st-contact" hidden>
@@ -359,10 +373,11 @@
         <button type="button" class="past" dir="auto"></button>
         <div class="entry">
           <span class="p">&gt;</span>
+          <span class="cur" aria-hidden="true"></span>
           <input type="text" id="contact" name="contact" maxlength="120" dir="auto" data-i18n-ph="contact_ph" autocomplete="off" enterkeyhint="next">
           <button type="button" class="go" aria-label="Next">↵</button>
         </div>
-        <div class="under"><button type="button" class="btn small" id="skip"><span class="k">[</span> <span class="label" data-i18n="skip"></span> <span class="k">]</span></button></div>
+        <div class="under"><button type="button" class="btn small back"><span class="k">[</span> ‹ <span class="label" data-i18n="back"></span> <span class="k">]</span></button><button type="button" class="btn small" id="skip"><span class="k">[</span> <span class="label" data-i18n="skip"></span> <span class="k">]</span></button></div>
       </div>
 
       <div class="step" id="st-look" hidden>
@@ -387,9 +402,11 @@
           </div>
         </div>
         <div class="actions">
-          <span></span>
+          <button type="button" class="btn small back"><span class="k">[</span> ‹ <span class="label" data-i18n="back"></span> <span class="k">]</span></button>
           <button type="submit" class="btn" id="send"><span class="k">[</span> <span class="label" id="sendLabel" data-i18n="send"></span> ↵ <span class="k">]</span></button>
         </div>
+      </div>
+
       </div>
 
       <input type="checkbox" name="botcheck" class="hp" tabindex="-1" autocomplete="off">
@@ -420,7 +437,7 @@
 
   /* ───────── Translations ───────── */
   const I18N = {
-    en: { q_name: "what's your name?", q_msg: "hi {name}. what's on your mind?", q_contact: "how can I reach you? (optional)", q_look: "last thing: pick your look", skip: "skip",
+    en: { back: "back", q_name: "what's your name?", q_msg: "hi {name}. what's on your mind?", q_contact: "how can I reach you? (optional)", q_look: "last thing: pick your look", skip: "skip",
       badname: "That name isn't allowed. Try another.", full: 'My inbox is full for today. Come back tomorrow.', closed: 'Not taking messages right now. Check back later.',
       cooldown: 'You can send another in {t}.', daily: "That's plenty for today. Come back tomorrow.",
       _name: "English", leave: "leave me a message",
@@ -429,7 +446,7 @@
       send: "send", sending: "transmitting…", sent: "✓ Message delivered. Thanks, I'll read it soon.", again: "write another",
       empty: "Write something first.", noname: "Tell me your name first.",
       error: "Couldn't send. Check your connection and try again.", tap: "tap the dark to seed life" },
-    "zh-Hans": { q_name: "你叫什么名字？", q_msg: "{name}，你好。想说点什么？", q_contact: "怎么联系你？（选填）", q_look: "最后一步：选个形象", skip: "跳过",
+    "zh-Hans": { back: "返回", q_name: "你叫什么名字？", q_msg: "{name}，你好。想说点什么？", q_contact: "怎么联系你？（选填）", q_look: "最后一步：选个形象", skip: "跳过",
       badname: '这个名字不行，换一个吧。', full: '今天的信箱满了，明天再来吧。', closed: '暂时不收留言，晚点再来看看。',
       cooldown: '{t} 后可以再发一条。', daily: '今天已经够多啦，明天再来吧。',
       _name: "简体中文", leave: "给我留言吧",
@@ -438,7 +455,7 @@
       send: "发送", sending: "传输中…", sent: "✓ 留言已送达。谢谢，我会尽快看。", again: "再写一条",
       empty: "先写点什么吧。", noname: "请先留下你的名字。",
       error: "发送失败，请检查网络后重试。", tap: "点击暗处，播种生命" },
-    "zh-Hant": { q_name: "你叫什麼名字？", q_msg: "{name}，你好。想說點什麼？", q_contact: "怎麼聯絡你？（選填）", q_look: "最後一步：選個形象", skip: "跳過",
+    "zh-Hant": { back: "返回", q_name: "你叫什麼名字？", q_msg: "{name}，你好。想說點什麼？", q_contact: "怎麼聯絡你？（選填）", q_look: "最後一步：選個形象", skip: "跳過",
       badname: '這個名字不行，換一個吧。', full: '今天的信箱滿了，明天再來吧。', closed: '暫時不收留言，晚點再來看看。',
       cooldown: '{t} 後可以再傳一則。', daily: '今天已經夠多囉，明天再來吧。',
       _name: "繁體中文", leave: "給我留言吧",
@@ -447,7 +464,7 @@
       send: "傳送", sending: "傳輸中…", sent: "✓ 留言已送達。謝謝，我會盡快看。", again: "再寫一則",
       empty: "先寫點什麼吧。", noname: "請先留下你的名字。",
       error: "傳送失敗，請檢查網路後再試。", tap: "點擊暗處，播種生命" },
-    es: { q_name: "¿cómo te llamas?", q_msg: "hola, {name}. ¿qué tienes en mente?", q_contact: "¿cómo te contacto? (opcional)", q_look: "por último: elige tu aspecto", skip: "omitir",
+    es: { back: "atrás", q_name: "¿cómo te llamas?", q_msg: "hola, {name}. ¿qué tienes en mente?", q_contact: "¿cómo te contacto? (opcional)", q_look: "por último: elige tu aspecto", skip: "omitir",
       badname: 'Ese nombre no está permitido. Prueba otro.', full: 'Mi buzón está lleno por hoy. Vuelve mañana.', closed: 'Ahora mismo no recibo mensajes. Vuelve más tarde.',
       cooldown: 'Podrás enviar otro en {t}.', daily: 'Suficiente por hoy. Vuelve mañana.',
       _name: "Español", leave: "déjame un mensaje",
@@ -456,7 +473,7 @@
       send: "enviar", sending: "transmitiendo…", sent: "✓ Mensaje entregado. Gracias, lo leeré pronto.", again: "escribir otro",
       empty: "Escribe algo primero.", noname: "Dime tu nombre primero.",
       error: "No se pudo enviar. Revisa tu conexión e inténtalo de nuevo.", tap: "toca la oscuridad para sembrar vida" },
-    hi: { q_name: "आपका नाम क्या है?", q_msg: "नमस्ते {name}। आप क्या कहना चाहते हैं?", q_contact: "मैं आपसे कैसे संपर्क करूँ? (वैकल्पिक)", q_look: "आख़िरी चीज़: अपना रूप चुनें", skip: "छोड़ें",
+    hi: { back: "वापस", q_name: "आपका नाम क्या है?", q_msg: "नमस्ते {name}। आप क्या कहना चाहते हैं?", q_contact: "मैं आपसे कैसे संपर्क करूँ? (वैकल्पिक)", q_look: "आख़िरी चीज़: अपना रूप चुनें", skip: "छोड़ें",
       badname: 'यह नाम नहीं चलेगा। कोई दूसरा नाम चुनें।', full: 'आज के लिए मेरा इनबॉक्स भर गया है। कल फिर आइए।', closed: 'अभी संदेश नहीं लिए जा रहे हैं। बाद में फिर देखें।',
       cooldown: 'आप {t} बाद दूसरा संदेश भेज सकते हैं।', daily: 'आज के लिए इतना काफ़ी है। कल फिर आइए।',
       _name: "हिन्दी", leave: "मुझे एक संदेश छोड़ें",
@@ -465,7 +482,7 @@
       send: "भेजें", sending: "भेजा जा रहा है…", sent: "✓ धन्यवाद! संदेश पहुँच गया।", again: "एक और लिखें",
       empty: "पहले कुछ लिखें।", noname: "पहले अपना नाम लिखें।",
       error: "भेजा नहीं जा सका। कनेक्शन जाँचें और फिर कोशिश करें।", tap: "जीवन बोने के लिए अँधेरे को छुएँ" },
-    ar: { q_name: "ما اسمك؟", q_msg: "أهلًا {name}. بماذا تفكر؟", q_contact: "كيف أتواصل معك؟ (اختياري)", q_look: "أخيرًا: اختر مظهرك", skip: "تخطٍّ",
+    ar: { back: "رجوع", q_name: "ما اسمك؟", q_msg: "أهلًا {name}. بماذا تفكر؟", q_contact: "كيف أتواصل معك؟ (اختياري)", q_look: "أخيرًا: اختر مظهرك", skip: "تخطٍّ",
       badname: 'هذا الاسم غير مسموح. جرّب اسمًا آخر.', full: 'صندوقي ممتلئ لهذا اليوم. عُد غدًا.', closed: 'لا أستقبل رسائل حاليًا. عُد لاحقًا.',
       cooldown: 'يمكنك إرسال رسالة أخرى بعد {t}.', daily: 'يكفي هذا لليوم. عُد غدًا.',
       _name: "العربية", leave: "اترك لي رسالة",
@@ -474,7 +491,7 @@
       send: "إرسال", sending: "جارٍ الإرسال…", sent: "✓ وصلت رسالتك. شكرًا، سأقرؤها قريبًا.", again: "اكتب رسالة أخرى",
       empty: "اكتب شيئًا أولًا.", noname: "اكتب اسمك أولًا.",
       error: "تعذّر الإرسال. تحقّق من اتصالك وحاول مجددًا.", tap: "المس الظلام لتزرع الحياة" },
-    bn: { q_name: "তোমার নাম কী?", q_msg: "হাই {name}। কী বলতে চাও?", q_contact: "তোমার সাথে কীভাবে যোগাযোগ করব? (ঐচ্ছিক)", q_look: "শেষ ধাপ: তোমার চেহারা বেছে নাও", skip: "বাদ দাও",
+    bn: { back: "ফিরে যাও", q_name: "তোমার নাম কী?", q_msg: "হাই {name}। কী বলতে চাও?", q_contact: "তোমার সাথে কীভাবে যোগাযোগ করব? (ঐচ্ছিক)", q_look: "শেষ ধাপ: তোমার চেহারা বেছে নাও", skip: "বাদ দাও",
       badname: 'এই নামটা চলবে না। অন্য একটা দাও।', full: 'আজকের জন্য আমার ইনবক্স ভরে গেছে। কাল আবার এসো।', closed: 'এখন বার্তা নেওয়া হচ্ছে না। পরে আবার দেখো।',
       cooldown: '{t} পরে আরেকটা পাঠাতে পারবে।', daily: 'আজকের জন্য যথেষ্ট। কাল আবার এসো।',
       _name: "বাংলা", leave: "আমাকে একটা বার্তা রেখে যাও",
@@ -483,7 +500,7 @@
       send: "পাঠাও", sending: "পাঠানো হচ্ছে…", sent: "✓ বার্তা পৌঁছেছে। ধন্যবাদ, শিগগিরই পড়ব।", again: "আরেকটা লেখো",
       empty: "আগে কিছু লেখো।", noname: "আগে তোমার নাম লেখো।",
       error: "পাঠানো যায়নি। সংযোগ দেখে আবার চেষ্টা করো।", tap: "অন্ধকারে ছুঁয়ে জীবন বোনো" },
-    pt: { q_name: "qual é o seu nome?", q_msg: "oi, {name}. o que você quer dizer?", q_contact: "como posso falar com você? (opcional)", q_look: "por último: escolha seu visual", skip: "pular",
+    pt: { back: "voltar", q_name: "qual é o seu nome?", q_msg: "oi, {name}. o que você quer dizer?", q_contact: "como posso falar com você? (opcional)", q_look: "por último: escolha seu visual", skip: "pular",
       badname: 'Esse nome não é permitido. Tente outro.', full: 'Minha caixa de entrada está cheia por hoje. Volte amanhã.', closed: 'Não estou recebendo mensagens agora. Volte mais tarde.',
       cooldown: 'Você pode enviar outra em {t}.', daily: 'Já chega por hoje. Volte amanhã.',
       _name: "Português", leave: "deixe uma mensagem",
@@ -492,7 +509,7 @@
       send: "enviar", sending: "transmitindo…", sent: "✓ Mensagem entregue. Obrigado, vou ler em breve.", again: "escrever outra",
       empty: "Escreva algo primeiro.", noname: "Diga seu nome primeiro.",
       error: "Não foi possível enviar. Verifique sua conexão e tente de novo.", tap: "toque no escuro para semear vida" },
-    ru: { q_name: "как вас зовут?", q_msg: "привет, {name}. что хотите сказать?", q_contact: "как с вами связаться? (необязательно)", q_look: "последнее: выберите облик", skip: "пропустить",
+    ru: { back: "назад", q_name: "как вас зовут?", q_msg: "привет, {name}. что хотите сказать?", q_contact: "как с вами связаться? (необязательно)", q_look: "последнее: выберите облик", skip: "пропустить",
       badname: 'Это имя нельзя использовать. Выберите другое.', full: 'На сегодня мой ящик полон. Возвращайтесь завтра.', closed: 'Сейчас сообщения не принимаются. Загляните позже.',
       cooldown: 'Следующее сообщение можно отправить через {t}.', daily: 'На сегодня достаточно. Возвращайтесь завтра.',
       _name: "Русский", leave: "оставьте мне сообщение",
@@ -501,7 +518,7 @@
       send: "отправить", sending: "передача…", sent: "✓ Сообщение доставлено. Спасибо, скоро прочитаю.", again: "написать ещё",
       empty: "Сначала напишите что-нибудь.", noname: "Сначала укажите имя.",
       error: "Не удалось отправить. Проверьте подключение и попробуйте снова.", tap: "коснитесь тьмы, чтобы посеять жизнь" },
-    ja: { q_name: "名前は？", q_msg: "やあ、{name}。何を伝えたい？", q_contact: "連絡先は？（任意）", q_look: "最後に：見た目を選んでね", skip: "スキップ",
+    ja: { back: "戻る", q_name: "名前は？", q_msg: "やあ、{name}。何を伝えたい？", q_contact: "連絡先は？（任意）", q_look: "最後に：見た目を選んでね", skip: "スキップ",
       badname: 'その名前は使えません。別の名前にしてください。', full: '今日の受信箱はいっぱいです。また明日どうぞ。', closed: '現在メッセージを受け付けていません。また後で来てね。',
       cooldown: '{t}後にまた送信できます。', daily: '今日はここまで。また明日どうぞ。',
       _name: "日本語", leave: "メッセージを残してね",
@@ -510,7 +527,7 @@
       send: "送信", sending: "送信中…", sent: "✓ メッセージが届きました。ありがとう、すぐに読みます。", again: "もう一通書く",
       empty: "まず何か書いてください。", noname: "まず名前を入力してください。",
       error: "送信できませんでした。接続を確認して、もう一度お試しください。", tap: "暗闇をタップして生命を蒔こう" },
-    ko: { q_name: "이름이 뭐예요?", q_msg: "안녕하세요, {name}님. 어떤 이야기를 남길까요?", q_contact: "어떻게 연락드릴까요? (선택)", q_look: "마지막으로: 캐릭터를 골라 주세요", skip: "건너뛰기",
+    ko: { back: "뒤로", q_name: "이름이 뭐예요?", q_msg: "안녕하세요, {name}님. 어떤 이야기를 남길까요?", q_contact: "어떻게 연락드릴까요? (선택)", q_look: "마지막으로: 캐릭터를 골라 주세요", skip: "건너뛰기",
       badname: '그 이름은 쓸 수 없어요. 다른 이름을 써 주세요.', full: '오늘은 메시지함이 가득 찼어요. 내일 다시 와 주세요.', closed: '지금은 메시지를 받지 않아요. 나중에 다시 와 주세요.',
       cooldown: '{t} 후에 다시 보낼 수 있어요.', daily: '오늘은 여기까지예요. 내일 다시 와 주세요.',
       _name: "한국어", leave: "메시지를 남겨 주세요",
@@ -519,7 +536,7 @@
       send: "보내기", sending: "전송 중…", sent: "✓ 메시지가 전달됐어요. 고마워요, 곧 읽을게요.", again: "하나 더 쓰기",
       empty: "먼저 내용을 입력해 주세요.", noname: "먼저 이름을 입력해 주세요.",
       error: "전송하지 못했어요. 연결을 확인하고 다시 시도해 주세요.", tap: "어둠을 터치해 생명을 심어 보세요" },
-    de: { q_name: "wie heißt du?", q_msg: "hi {name}. was möchtest du sagen?", q_contact: "wie erreiche ich dich? (optional)", q_look: "zum Schluss: wähl dein Aussehen", skip: "überspringen",
+    de: { back: "zurück", q_name: "wie heißt du?", q_msg: "hi {name}. was möchtest du sagen?", q_contact: "wie erreiche ich dich? (optional)", q_look: "zum Schluss: wähl dein Aussehen", skip: "überspringen",
       badname: 'Dieser Name ist nicht erlaubt. Versuch einen anderen.', full: 'Mein Postfach ist für heute voll. Komm morgen wieder.', closed: 'Gerade keine Nachrichten möglich. Schau später wieder vorbei.',
       cooldown: 'Du kannst in {t} wieder eine senden.', daily: 'Genug für heute. Komm morgen wieder.',
       _name: "Deutsch", leave: "hinterlass mir eine Nachricht",
@@ -528,7 +545,7 @@
       send: "senden", sending: "wird übertragen…", sent: "✓ Nachricht angekommen. Danke, ich lese sie bald.", again: "noch eine schreiben",
       empty: "Schreib zuerst etwas.", noname: "Sag mir zuerst deinen Namen.",
       error: "Senden fehlgeschlagen. Prüf deine Verbindung und versuch es erneut.", tap: "tippe ins Dunkel, um Leben zu säen" },
-    fr: { q_name: "comment tu t'appelles ?", q_msg: "salut {name}. qu'est-ce que tu veux dire ?", q_contact: "comment te recontacter ? (facultatif)", q_look: "dernière étape : choisis ton look", skip: "passer",
+    fr: { back: "retour", q_name: "comment tu t'appelles ?", q_msg: "salut {name}. qu'est-ce que tu veux dire ?", q_contact: "comment te recontacter ? (facultatif)", q_look: "dernière étape : choisis ton look", skip: "passer",
       badname: "Ce nom n'est pas autorisé. Essaie un autre.", full: "Ma boîte est pleine pour aujourd'hui. Reviens demain.", closed: 'Je ne reçois pas de messages pour le moment. Reviens plus tard.',
       cooldown: 'Tu pourras en envoyer un autre dans {t}.', daily: "C'est assez pour aujourd'hui. Reviens demain.",
       _name: "Français", leave: "laisse-moi un message",
@@ -537,7 +554,7 @@
       send: "envoyer", sending: "transmission…", sent: "✓ Message reçu. Merci, je le lirai bientôt.", again: "en écrire un autre",
       empty: "Écris quelque chose d'abord.", noname: "Dis-moi d'abord ton nom.",
       error: "Échec de l'envoi. Vérifie ta connexion et réessaie.", tap: "touche l'obscurité pour semer la vie" },
-    id: { q_name: "siapa namamu?", q_msg: "hai {name}. apa yang ingin kamu sampaikan?", q_contact: "bagaimana aku bisa menghubungimu? (opsional)", q_look: "terakhir: pilih tampilanmu", skip: "lewati",
+    id: { back: "kembali", q_name: "siapa namamu?", q_msg: "hai {name}. apa yang ingin kamu sampaikan?", q_contact: "bagaimana aku bisa menghubungimu? (opsional)", q_look: "terakhir: pilih tampilanmu", skip: "lewati",
       badname: 'Nama itu tidak diizinkan. Coba yang lain.', full: 'Kotak masukku penuh untuk hari ini. Datang lagi besok.', closed: 'Sedang tidak menerima pesan. Coba lagi nanti.',
       cooldown: 'Kamu bisa mengirim lagi dalam {t}.', daily: 'Cukup untuk hari ini. Datang lagi besok.',
       _name: "Bahasa Indonesia", leave: "tinggalkan pesan untukku",
@@ -546,7 +563,7 @@
       send: "kirim", sending: "mengirim…", sent: "✓ Pesan terkirim. Terima kasih, akan segera kubaca.", again: "tulis lagi",
       empty: "Tulis sesuatu dulu.", noname: "Tulis namamu dulu.",
       error: "Gagal mengirim. Periksa koneksimu dan coba lagi.", tap: "ketuk kegelapan untuk menabur kehidupan" },
-    tr: { q_name: "adın ne?", q_msg: "selam {name}. aklında ne var?", q_contact: "sana nasıl ulaşabilirim? (isteğe bağlı)", q_look: "son olarak: görünümünü seç", skip: "atla",
+    tr: { back: "geri", q_name: "adın ne?", q_msg: "selam {name}. aklında ne var?", q_contact: "sana nasıl ulaşabilirim? (isteğe bağlı)", q_look: "son olarak: görünümünü seç", skip: "atla",
       badname: 'Bu isme izin verilmiyor. Başka bir tane dene.', full: 'Bugünlük gelen kutum dolu. Yarın tekrar gel.', closed: 'Şu an mesaj almıyorum. Sonra tekrar uğra.',
       cooldown: '{t} sonra tekrar gönderebilirsin.', daily: 'Bugünlük bu kadar yeter. Yarın tekrar gel.',
       _name: "Türkçe", leave: "bana bir mesaj bırak",
@@ -555,7 +572,7 @@
       send: "gönder", sending: "iletiliyor…", sent: "✓ Mesaj ulaştı. Teşekkürler, yakında okuyacağım.", again: "bir tane daha yaz",
       empty: "Önce bir şey yaz.", noname: "Önce adını yaz.",
       error: "Gönderilemedi. Bağlantını kontrol edip tekrar dene.", tap: "hayat ekmek için karanlığa dokun" },
-    vi: { q_name: "bạn tên gì?", q_msg: "chào {name}. bạn muốn nói gì?", q_contact: "mình liên lạc với bạn bằng cách nào? (không bắt buộc)", q_look: "bước cuối: chọn ngoại hình", skip: "bỏ qua",
+    vi: { back: "quay lại", q_name: "bạn tên gì?", q_msg: "chào {name}. bạn muốn nói gì?", q_contact: "mình liên lạc với bạn bằng cách nào? (không bắt buộc)", q_look: "bước cuối: chọn ngoại hình", skip: "bỏ qua",
       badname: 'Tên này không được phép. Hãy chọn tên khác.', full: 'Hộp thư hôm nay đã đầy. Mai quay lại nhé.', closed: 'Hiện chưa nhận tin nhắn. Quay lại sau nhé.',
       cooldown: 'Bạn có thể gửi tiếp sau {t}.', daily: 'Hôm nay vậy là đủ rồi. Mai quay lại nhé.',
       _name: "Tiếng Việt", leave: "để lại lời nhắn cho tôi nhé",
@@ -597,7 +614,18 @@
     const o = document.createElement("option"); o.value = code; o.textContent = d._name; sel.appendChild(o);
   }
   sel.value = lang;
-  sel.addEventListener("change", () => { lang = sel.value; store.set("g14-lang", lang); applyLang(); });
+  // a native <select> is as wide as its longest option; shrink it to the language being shown
+  function fitLang() {
+    const m = document.createElement("span");
+    m.style.cssText = "position:absolute;visibility:hidden;white-space:pre;font:14px " + getComputedStyle(sel).fontFamily;
+    m.textContent = sel.options[sel.selectedIndex].text;
+    document.body.appendChild(m);
+    sel.style.width = Math.ceil(m.getBoundingClientRect().width) + 26 + "px";
+    m.remove();
+  }
+  sel.addEventListener("change", () => { lang = sel.value; store.set("g14-lang", lang); applyLang(); fitLang(); });
+  fitLang();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitLang);
 
   /* ───────── GitHub link ───────── */
   (() => {
@@ -1351,7 +1379,16 @@
       { el: document.getElementById("st-look"),                    key: "q_look",    last: true }
     ];
     steps.forEach(st => { st.qt = st.el.querySelector(".qt"); st.past = st.el.querySelector(".past"); });
-    let active = -1, reached = -1, typingToken = 0;
+
+    // a blinking block sits after the ">" while a line is empty and not being typed in
+    const idle = (st) => { if (st.input) st.input.closest(".entry").classList.toggle("idle", !st.input.value && document.activeElement !== st.input); };
+    steps.forEach(st => {
+      if (!st.input) return;
+      ["input", "focus", "blur"].forEach(ev => st.input.addEventListener(ev, () => idle(st)));
+      st.input.closest(".entry").addEventListener("click", (e) => { if (!e.target.closest("button")) st.input.focus(); });
+      idle(st);
+    });
+    let active = -1, typingToken = 0;
 
     const question = (st) => t(st.key).replace("{name}", sender.value.trim());
 
@@ -1366,24 +1403,38 @@
       }
     }
 
-    function render() {
-      steps.forEach((st, j) => {
-        st.el.hidden = j > reached;
-        st.el.classList.toggle("active", j === active);
-        if (st.past) {
-          const v = st.input.value.trim().split("\n")[0];
-          st.past.textContent = v || "—";
-        }
-        if (st.typed && j !== active) st.qt.textContent = question(st);   // keeps "hi {name}" current
-      });
+    const prog = document.getElementById("prog");
+
+    // one question on screen at a time: the old one slides away, the new one takes its place
+    function swap(from, to) {
+      const back = to < from;
+      if (from >= 0 && from !== to) {
+        const out = steps[from].el;
+        out.classList.remove("active", "entering", "rev");
+        out.classList.add("leaving");
+        out.classList.toggle("rev", back);
+        setTimeout(() => { out.classList.remove("leaving", "rev"); if (active !== from) out.hidden = true; }, reduced ? 0 : 300);
+      }
+      steps.forEach((st, k) => { if (k !== to && !st.el.classList.contains("leaving")) st.el.hidden = true; });
+      const inn = steps[to].el;
+      inn.hidden = false;
+      inn.classList.add("active");
+      if (from >= 0 && from !== to && !reduced) {
+        inn.classList.remove("entering", "rev"); void inn.offsetWidth;
+        inn.classList.add("entering"); inn.classList.toggle("rev", back);
+        setTimeout(() => inn.classList.remove("entering", "rev"), 360);
+      }
+      prog.textContent = (to + 1) + "/" + steps.length;
     }
 
     function show(i, { focus = true } = {}) {
-      active = i; reached = Math.max(reached, i);
+      const from = active;
+      active = i;
       clearErr();
-      render();
+      swap(from, i);
       const st = steps[i];
       if (!st.typed) typeQuestion(st); else st.qt.textContent = question(st);
+      steps.forEach(idle);
       if (st.input && focus) st.input.focus({ preventScroll: true });     // same tap → keyboard stays open
       if (st.last && document.activeElement && document.activeElement.blur) document.activeElement.blur();
       if (focus) setTimeout(() => st.el.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" }), 60);
@@ -1393,17 +1444,18 @@
       const st = steps[active];
       if (!st || st.last) return;
       if (st.need && !st.input.value.trim()) return showErr(st.need, st.input);
-      st.done = true;
       Sound.key();
-      if (active === 0) steps[1].typed = steps[1].typed && steps[1].done;   // re-greet if the name changed before the message
-      let n = steps.findIndex((x, j) => j > active && !x.done && !x.last);
-      if (n < 0) n = steps.length - 1;
-      show(n);
+      show(active + 1);
+    }
+    function back() {
+      if (active <= 0) return;
+      Sound.key(0.6);
+      show(active - 1);
     }
 
     steps.forEach((st, j) => {
-      if (st.past) st.past.addEventListener("click", () => show(j));
       st.el.querySelectorAll(".go").forEach(b => b.addEventListener("click", next));
+      st.el.querySelectorAll(".back").forEach(b => b.addEventListener("click", back));
       if (st.input) st.input.addEventListener("keydown", (e) => {
         if (e.key !== "Enter" || e.isComposing || e.keyCode === 229) return;   // let IME (CJK) typing finish
         if (st.input === msg && e.shiftKey) return;                            // shift+enter = new line
@@ -1419,7 +1471,7 @@
       goTo(i) { show(i); },
       again() {                                   // keep name, contact and look; ask for a new message
         msg.value = ""; countEl.textContent = "0/1000"; grow();
-        steps[1].done = false; steps[1].typed = false;
+        steps[1].typed = false;
         show(1);
       }
     };
