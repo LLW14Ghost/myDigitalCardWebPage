@@ -1123,7 +1123,8 @@
       if (!W) return;
       const max = Math.max(6, Math.min(40, Math.floor(W / 7)));
       const mine = people.filter(p => p.v.me);
-      const rest = visitors.filter(v => Av.parse(v.a) && !mine.some(m => m.v.t === v.t && m.v.n === v.n))
+      const mineNames = new Set(mine.map(p => p.v.n));
+      const rest = visitors.filter(v => Av.parse(v.a) && !mineNames.has(v.n))
                            .slice(0, max - mine.length);
       people = [...mine, ...rest.map(person)];
     }
@@ -1243,8 +1244,15 @@
         const all = (list || []).slice();
         const seen = new Set(all.map(v => v.n + "|" + v.a));
         for (const v of AI_RESIDENTS) if (!seen.has(v.n + "|" + v.a)) all.push({ ...v, ai: true });
-        for (const v of all) if (!v.ai && AI_RESIDENTS.some(r => r.n === v.n && r.a === v.a)) v.ai = true;
-        visitors = all.sort((a, b) => (b.ai ? 1 : 0) - (a.ai ? 1 : 0) || b.t - a.t);
+        // one character per name, keeping the newest visit
+        const byName = new Map();
+        for (const v of all) {
+          const cur = byName.get(v.n);
+          if (!cur || v.t > cur.t) byName.set(v.n, v);
+        }
+        const unique = [...byName.values()];
+        for (const v of unique) if (AI_RESIDENTS.some(r => r.n === v.n)) v.ai = true;
+        visitors = unique.sort((a, b) => (b.ai ? 1 : 0) - (a.ai ? 1 : 0) || b.t - a.t);
         populate();
         if (built && reduced) frame(performance.now());
       },
@@ -1257,6 +1265,7 @@
         setTimeout(() => { const p = people.find(q => !q.v.me) || people[0]; if (p) show(p, 3500); if (reduced) frame(performance.now()); }, 1800);
       },
       addMe(v) {
+        people = people.filter(p => p.v.n !== v.n);
         const p = person({ ...v, me: true }, people.length);
         p.x = Math.max(1, Math.min(W - 13, cx + (Math.random() < 0.5 ? -18 : 6)));
         people.unshift(p);
