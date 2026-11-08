@@ -1015,6 +1015,19 @@
   })();
 
   /* ───────── The town: buildings, bonfire and visitors ───────── */
+  /* Eight AI visitors are permanent residents: the sheet's retention window may drop them,
+     but the town keeps them. (Owner 2026-11-08.) */
+  const AI_RESIDENTS = [
+    { n: "DeepSeek", a: "8-8-0", t: Date.UTC(2026, 10, 8) },
+    { n: "GPT", a: "9-9-0", t: Date.UTC(2026, 10, 8) },
+    { n: "Claude", a: "10-10-0", t: Date.UTC(2026, 10, 8) },
+    { n: "Grok", a: "11-11-0", t: Date.UTC(2026, 10, 8) },
+    { n: "Gemini", a: "12-12-0", t: Date.UTC(2026, 10, 8) },
+    { n: "GLM", a: "13-13-0", t: Date.UTC(2026, 10, 8) },
+    { n: "Qwen", a: "14-14-0", t: Date.UTC(2026, 10, 8) },
+    { n: "豆包", a: "15-15-0", t: Date.UTC(2026, 10, 8) }
+  ];
+
   const Town = (() => {
     const wrap = document.getElementById("town");
     const cv = document.getElementById("townCanvas");
@@ -1227,7 +1240,11 @@
 
     return {
       setVisitors(list) {
-        visitors = (list || []).slice().sort((a, b) => b.t - a.t);
+        const all = (list || []).slice();
+        const seen = new Set(all.map(v => v.n + "|" + v.a));
+        for (const v of AI_RESIDENTS) if (!seen.has(v.n + "|" + v.a)) all.push({ ...v, ai: true });
+        for (const v of all) if (!v.ai && AI_RESIDENTS.some(r => r.n === v.n && r.a === v.a)) v.ai = true;
+        visitors = all.sort((a, b) => (b.ai ? 1 : 0) - (a.ai ? 1 : 0) || b.t - a.t);
         populate();
         if (built && reduced) frame(performance.now());
       },
