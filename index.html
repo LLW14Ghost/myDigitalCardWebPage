@@ -942,7 +942,16 @@
       // Kimi: near-black hair, crescent moon and a single star.
       { name: "moon", pal: { H: "#1b2340", D: "#0f1529", A: "#e8c55a", B: "#cfd8ea" }, rows: { 0: "...B....AA..", 1: ".......A.A..", 2: "....HHHH.A..", 3: "...HHHHHHH..", 4: "..HHHHHHHHH.", 5: "..H......H..", 6: "..H......H..", 7: "..D......D..", 8: "...D....D..." } },
       // Tongyi: violet hair in low twin tails under a small cloud.
-      { name: "cloud", pal: { H: "#7a5cc0", D: "#523a8a", A: "#e8e4f5", B: "#b9a8e6" }, rows: { 0: "..AAAA......", 1: ".AABBAA.....", 2: ".AABBAA.....", 3: "..HHHHHHHH..", 4: "..HHHHHHHHH.", 5: ".H........H.", 6: ".H........H.", 7: ".D........D.", 8: "..D......D.." } }
+      { name: "cloud", pal: { H: "#7a5cc0", D: "#523a8a", A: "#e8e4f5", B: "#b9a8e6" }, rows: { 0: "..AAAA......", 1: ".AABBAA.....", 2: ".AABBAA.....", 3: "..HHHHHHHH..", 4: "..HHHHHHHHH.", 5: ".H........H.", 6: ".H........H.", 7: ".D........D.", 8: "..D......D.." } },
+      // The four outside China, same rule: original art, one small ornament per brand.
+      // Claude: warm copper hair under an Anthropic-style radiant star.
+      { name: "claude", pal: { H: "#c06a45", D: "#8f4a30", A: "#e8895f", B: "#f2e6d8" }, rows: { 0: ".....A.A....", 1: "......AAA...", 2: ".....A.A....", 3: "....HHHHHH..", 4: "...HHHHHHHH.", 5: "..H......H..", 6: "..H......H..", 7: "..D......D..", 8: "...D....D..." } },
+      // ChatGPT: deep-green bob with the six-lobe knot.
+      { name: "gpt", pal: { H: "#2a6b5a", D: "#174a3c", A: "#10a37f", B: "#f0f4f2" }, rows: { 0: "...AAAA.....", 1: "..A.A.A.....", 2: "...AAAA.....", 3: "....HHHHHH..", 4: "...HHHHHHHH.", 5: "..H......H..", 6: "..H......H..", 7: "..D......D..", 8: "............" } },
+      // Gemini: blue-violet long hair, a sparkle and a second small star.
+      { name: "gemini", pal: { H: "#5a6fd8", D: "#3946a8", A: "#b8a6ff", B: "#ffffff" }, rows: { 0: "..B.....A...", 1: ".......AAA..", 2: "........A...", 3: "....HHHHHH..", 4: "...HHHHHHHH.", 5: "..H......H..", 6: "..H......H..", 7: "..H......H..", 8: "..A......A.." } },
+      // Grok: black asymmetric cut, white streak, white X clip.
+      { name: "grok", pal: { H: "#1a1a1e", D: "#0b0b0d", A: "#e8e8ea", B: "#8a8a90" }, rows: { 0: "........A.A.", 1: ".........A..", 2: "........A.A.", 3: "....HHHHHH..", 4: "...HHHHHHHH.", 5: "..H......HB.", 6: "..D......HB.", 7: "..D......H..", 8: ".........A.." } }
     ];
     // outfits draw rows 9–15
     const OUTFITS = [
@@ -958,7 +967,11 @@
       { name: "dive", pal: { O: "#2a4a8f", D: "#17305f", A: "#79b8e8", B: "#e6f0fa", L: "#1b2a4a" }, rows: ["..DOOOOOOD..", "..OOOOOOOO..", "..OBAAAAOO..", "..SOOOOOOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }, // deep-sea techsuit
       { name: "hoodie", pal: { O: "#e8c07a", D: "#c49a55", A: "#f6e7c6", B: "#8a5a2b", L: "#8a6a45" }, rows: ["..DOOOOOOD..", "..OAOOOOAO..", "..OABBBBAO..", "..SOOOOOOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }, // cream hoodie
       { name: "gown", pal: { O: "#232c52", D: "#141a33", A: "#e8c55a", B: "#cfd8ea" }, rows: ["..OOOAAOOO..", "..OOOOOOOO..", "..OOAOOAOO..", "..SOOOOOOS..", "...OOOOOO...", "...OOOOOO...", "...DAAAAD..."] }, // long midnight gown
-      { name: "robe", pal: { O: "#6b4fa8", D: "#4a3178", A: "#e8e4f5", B: "#b9a8e6" }, rows: ["..DOOOOOOD..", "..OAOOOOAO..", "..OABBBAOO..", "..SOOOOOOS..", "...OOOOOO...", "...OOOOOO...", "...DBBBBD..."] } // violet cloud robe
+      { name: "robe", pal: { O: "#6b4fa8", D: "#4a3178", A: "#e8e4f5", B: "#b9a8e6" }, rows: ["..DOOOOOOD..", "..OAOOOOAO..", "..OABBBAOO..", "..SOOOOOOS..", "...OOOOOO...", "...OOOOOO...", "...DBBBBD..."] }, // violet cloud robe
+      { name: "coat", pal: { O: "#c06a45", D: "#8f4a30", A: "#f2e6d8", B: "#3a2a24", L: "#4a3a30" }, rows: ["..DOOOOOOD..", "..OAAAAAAO..", "..OABBBBAO..", "..SOOOOOOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }, // warm long coat
+      { name: "shell", pal: { O: "#1f4a40", D: "#0b2e28", A: "#10a37f", B: "#f0f4f2", L: "#16332e" }, rows: ["..DOOOOOOD..", "..OOOOOOOO..", "..OABBBAOO..", "..SOOOOOOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }, // dark-green shell
+      { name: "veil", pal: { O: "#4a56c0", D: "#2e378a", A: "#b8a6ff", B: "#ffffff" }, rows: ["..OOOAAOOO..", "..OOOOOOOO..", "..OOAOOAOO..", "..SOOOOOOS..", "...OOOOOO...", "...OOOOOO...", "...DBBBBD..."] }, // blue-violet veil
+      { name: "wire", pal: { O: "#1a1a1e", D: "#0b0b0d", A: "#e8e8ea", B: "#8a8a90", L: "#2a2a30" }, rows: ["..DOOOOOOD..", "..OOAOOAOO..", "..OAAOOAAO..", "..SOOOOOOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] } // black wireframe jacket
     ];
 
     const parse = (code) => {
