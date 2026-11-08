@@ -932,7 +932,17 @@
       { pal: { H: "#d8d2c0", K: "#2a2a33" }, rows: { 0: ".H........H.", 1: ".H........H.", 2: "..H......H..", 3: "..HKKKKKKH..", 4: "...KKKKKK..." } }, // horns
       { pal: { H: "#6fbf7f", A: "#ece8df", D: "#c8b89a" }, rows: { 0: "....HHHH....", 1: "..HHAHHHHH..", 2: ".HHHHHHAHHH.", 3: ".HAHHHHHHHH.", 4: ".DDDDDDDDDD." } }, // mushroom cap
       { pal: { A: "#e0b84f", D: "#b8443a", K: "#6b4a2b" }, rows: { 2: "...A.AA.A...", 3: "...AADDAA...", 4: "..KKKKKKKK..", 5: "..K......K.." } }, // crown
-      { pal: { K: "#d9c27a" }, rows: { 3: "...KKKKKK...", 4: "..KKKKKKKK..", 5: "..K......K..", 6: ".SK......KS.", 7: "..K......K..", 8: "..K......K.." } }  // elf
+      { pal: { K: "#d9c27a" }, rows: { 3: "...KKKKKK...", 4: "..KKKKKKKK..", 5: "..K......K..", 6: ".SK......KS.", 7: "..K......K..", 8: "..K......K.." } }, // elf
+      // AI looks. Four Chinese AI assistants as women, drawn as original 12×16 art;
+      // the small hair ornament is the only nod to each brand, nothing copied.
+      // DeepSeek: blue whale tail over long dark-blue hair.
+      { name: "whale", pal: { H: "#2b3f7d", D: "#1a2855", A: "#79b8e8", B: "#e6f0fa" }, rows: { 0: ".......AAA..", 1: "......ABA...", 2: "....HHHH.AA.", 3: "...HHHHHHH..", 4: "..HHHHHHHHH.", 5: "..H......H..", 6: "..H......H..", 7: "..D......D..", 8: "...D....D..." } },
+      // Doubao: warm cream bob with two bun-dumpling knots.
+      { name: "bean", pal: { H: "#e3bf7a", D: "#b8874a", A: "#8a5a2b", B: "#f6e7c6" }, rows: { 0: "..AA....AA..", 1: "..AB....BA..", 2: "...HHHHHHH..", 3: "..HHHHHHHH..", 4: "..HHHHHHHHH.", 5: "..H......H..", 6: "..H......H..", 7: "..D......D..", 8: "...D....D..." } },
+      // Kimi: near-black hair, crescent moon and a single star.
+      { name: "moon", pal: { H: "#1b2340", D: "#0f1529", A: "#e8c55a", B: "#cfd8ea" }, rows: { 0: "...B....AA..", 1: ".......A.A..", 2: "....HHHH.A..", 3: "...HHHHHHH..", 4: "..HHHHHHHHH.", 5: "..H......H..", 6: "..H......H..", 7: "..D......D..", 8: "...D....D..." } },
+      // Tongyi: violet hair in low twin tails under a small cloud.
+      { name: "cloud", pal: { H: "#7a5cc0", D: "#523a8a", A: "#e8e4f5", B: "#b9a8e6" }, rows: { 0: "..AAAA......", 1: ".AABBAA.....", 2: ".AABBAA.....", 3: "..HHHHHHHH..", 4: "..HHHHHHHHH.", 5: ".H........H.", 6: ".H........H.", 7: ".D........D.", 8: "..D......D.." } }
     ];
     // outfits draw rows 9–15
     const OUTFITS = [
@@ -943,7 +953,12 @@
       { pal: { O: "#3a3a48", D: "#22222c", A: "#d8d2c0", G: "#9fe0a8" }, rows: ["..OOAAAAOO..", "..OOOOOOOO..", "..OOOGGOOO..", "..SOOOOOOS..", "...OOOOOO...", "...OOOOOO...", "...DDDDDD..."] }, // necromancer
       { pal: { O: "#9b3b4f", D: "#e8e2d0", A: "#e0b84f", L: "#3b3b5a", B: "#2a2020" }, rows: ["..DOOAAOOD..", "..DOOOOOOD..", "..DOAOOAOD..", "..SOOOOOOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }, // bard
       { pal: { O: "#6f8f4e", D: "#4b6636", A: "#9fe0a8" }, rows: ["..OODDDDOO..", "..OAOOOOAO..", "..OOOOAOOO..", "..SOAOOOOS..", "...OOOOOO...", "...OOOOOO...", "...DDDDDD..."] }, // druid
-      { pal: { O: "#4d4848", D: "#2e2b2b", A: "#8a6a45", L: "#353131", B: "#1f1c1c" }, rows: ["..OOAOOOOO..", "..OOOAOOOO..", "..OOOOAOOO..", "..SOOOOAOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }  // rogue
+      { pal: { O: "#4d4848", D: "#2e2b2b", A: "#8a6a45", L: "#353131", B: "#1f1c1c" }, rows: ["..OOAOOOOO..", "..OOOAOOOO..", "..OOOOAOOO..", "..SOOOOAOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }, // rogue
+      // AI looks, to match the four heads above.
+      { name: "dive", pal: { O: "#2a4a8f", D: "#17305f", A: "#79b8e8", B: "#e6f0fa", L: "#1b2a4a" }, rows: ["..DOOOOOOD..", "..OOOOOOOO..", "..OBAAAAOO..", "..SOOOOOOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }, // deep-sea techsuit
+      { name: "hoodie", pal: { O: "#e8c07a", D: "#c49a55", A: "#f6e7c6", B: "#8a5a2b", L: "#8a6a45" }, rows: ["..DOOOOOOD..", "..OAOOOOAO..", "..OABBBBAO..", "..SOOOOOOS..", "...OOOOOO...", "...LL..LL...", "...BB..BB..."] }, // cream hoodie
+      { name: "gown", pal: { O: "#232c52", D: "#141a33", A: "#e8c55a", B: "#cfd8ea" }, rows: ["..OOOAAOOO..", "..OOOOOOOO..", "..OOAOOAOO..", "..SOOOOOOS..", "...OOOOOO...", "...OOOOOO...", "...DAAAAD..."] }, // long midnight gown
+      { name: "robe", pal: { O: "#6b4fa8", D: "#4a3178", A: "#e8e4f5", B: "#b9a8e6" }, rows: ["..DOOOOOOD..", "..OAOOOOAO..", "..OABBBAOO..", "..SOOOOOOS..", "...OOOOOO...", "...OOOOOO...", "...DBBBBD..."] } // violet cloud robe
     ];
 
     const parse = (code) => {
@@ -991,7 +1006,8 @@
       cache.set(key, f);
       return f;
     }
-    return { SKINS, nH: HEADS.length, nO: OUTFITS.length, frames, parse };
+    const nameOf = (list) => (i) => (list[i] && list[i].name) || "";
+    return { SKINS, nH: HEADS.length, nO: OUTFITS.length, headName: nameOf(HEADS), outfitName: nameOf(OUTFITS), frames, parse };
   })();
 
   /* ───────── The town: buildings, bonfire and visitors ───────── */
@@ -1496,8 +1512,9 @@
     pg.drawImage(f[previewStep], 0, 0);
   }
   function renderLook() {
-    document.getElementById("lblHead").textContent = `head ${look[0] + 1}/${Av.nH}`;
-    document.getElementById("lblFit").textContent = `outfit ${look[1] + 1}/${Av.nO}`;
+    const hName = Av.headName(look[0]), fName = Av.outfitName(look[1]);
+    document.getElementById("lblHead").textContent = `head ${look[0] + 1}/${Av.nH}${hName ? " · " + hName : ""}`;
+    document.getElementById("lblFit").textContent = `outfit ${look[1] + 1}/${Av.nO}${fName ? " · " + fName : ""}`;
     [...skinsEl.children].forEach((b, i) => b.setAttribute("aria-pressed", String(i === look[2])));
     store.set("g14-look", lookCode());
     drawPreview();
