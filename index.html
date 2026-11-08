@@ -1011,7 +1011,12 @@
       return f;
     }
     const nameOf = (list) => (i) => (list[i] && list[i].name) || "";
-    return { SKINS, nH: HEADS.length, nO: OUTFITS.length, headName: nameOf(HEADS), outfitName: nameOf(OUTFITS), frames, parse };
+    // Named looks are the AI residents: they stay in the town, but visitors cannot pick them.
+    const firstAI = HEADS.findIndex(h => h.name);
+    const firstAIo = OUTFITS.findIndex(o => o.name);
+    const selH = firstAI < 0 ? HEADS.length : firstAI;
+    const selO = firstAIo < 0 ? OUTFITS.length : firstAIo;
+    return { SKINS, nH: selH, nO: selO, headName: nameOf(HEADS), outfitName: nameOf(OUTFITS), frames, parse };
   })();
 
   /* ───────── The town: buildings, bonfire and visitors ───────── */
@@ -1524,7 +1529,9 @@
   /* ───────── Character creator ───────── */
   const look = (() => {
     const saved = Av.parse(store.get("g14-look"));
-    return saved || [Math.floor(Math.random() * Av.nH), Math.floor(Math.random() * Av.nO), Math.floor(Math.random() * Av.SKINS.length)];
+    return saved && saved[0] < Av.nH && saved[1] < Av.nO
+      ? saved
+      : [Math.floor(Math.random() * Av.nH), Math.floor(Math.random() * Av.nO), Math.floor(Math.random() * Av.SKINS.length)];
   })();
   const lookCode = () => look.join("-");
   const preview = document.getElementById("preview"), pg = preview.getContext("2d");
